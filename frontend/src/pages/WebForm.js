@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 // import Images from "./images/imagejson";
 // import "./custom.js";
 import { useNavigate } from "react-router-dom";
@@ -7,53 +7,63 @@ import { useNavigate } from "react-router-dom";
 // import "./json.json";
 import Navbar from "../components/Navbar";
 import Images from "../images/imagejson";
+let first = true
 export default function WebForm() {
-  // var data = require("./json.json");
+  let data = require(`./json.json`)
   const [screenstitles, setScreensTitle] = useState({});
-  const [screencount, screenCount] = useState(0);
+  let [screencount, screenCount] = useState(data["NOOFSCREENS"]);
   let navigate = useNavigate();
   const [screenlst, screenLst] = useState([]);
   const [txtscreendrpdown, textDrpDwn] = useState([])
   const [radioscreendrpdown, radioDrpDwn] = useState([])
   const [comboscreendrpdown, comboDrpDwn] = useState([])
+  let bool = false
+  // useEffect(() => {
+  //   getdata()
+  // }, [])
+  const firstTime = () => {
+
+    for (let i = 0; i < screencount; i++) {
+      screenlst.push(
+        <div className="col-md-4">
+          <div className="screen">
+            {data["SCREENS"]["Screen" + (i + 1).toString()][0]}
+          </div>
+          <input
+            className="mt-3 form-control form-control-sm"
+            type="text"
+            placeholder=".form-control-sm"
+            defaultValue={data["SCREENS"]["Screen" + (i + 1).toString()]}
+
+          />
+        </div>
+      );
+    }
+
+  }
+  if (first) {
+    firstTime()
+    first = false
+  }
+
+
+  // const getdata = async () => {
+  //   let response = await fetch("http://127.0.0.1:8000/api/get/");
+  //   let data = await response.json();
+  // } 
+
   useEffect(() => {
-    getdata()
+    // screenCount(data["NOOFSCREENS"])
+    // firstTime()
+    // console.log(screencount)
+
+    // console.log(screenlst)
+
   }, [])
 
 
-  const getdata = async () => {
-    let response = await fetch("http://127.0.0.1:8000/api/get/");
-    let data = await response.json();
-    console.log(data)
-  }
 
-  for (let i = 0; i < screencount; i++) {
-    screenlst.push(
-      <div className="col-md-4">
-        <div className="screen"></div>
-        <input
-          class="mt-3 form-control form-control-sm"
-          type="text"
-          placeholder=".form-control-sm"
-        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
-        />
-      </div>
-    );
-  }
 
-  for (let i = 0; i < screencount; i++) {
-    screenlst.push(
-      <div className="col-md-4">
-        <div className="screen"></div>
-        <input
-          class="mt-3 form-control form-control-sm"
-          type="text"
-          placeholder=".form-control-sm"
-        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
-        />
-      </div>
-    );
-  }
 
   const routerChange = () => {
     navigate("/webformdetails");
@@ -66,7 +76,19 @@ export default function WebForm() {
   };
 
   const addScreen = () => {
+
     screenCount(screencount + 1);
+    screenlst.push(
+      <div className="col-md-4">
+        <div className="screen"></div>
+        <input
+          className="mt-3 form-control form-control-sm"
+          type="text"
+          placeholder=".form-control-sm"
+        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
+        />
+      </div>)
+    // console.log(screencount)
   };
   const minusScreen = () => {
     if (screencount > 1) {
@@ -83,6 +105,8 @@ export default function WebForm() {
   // });
   return (
     <>
+      {bool}
+
       <Navbar title="PRO-VISION" profileID={1426363} user="Kevin Smith" />
       <div className="container webformcontainer">
         <h2 className="h2headingplan text-center">
@@ -107,7 +131,7 @@ export default function WebForm() {
                         <input
                           className="shadow p-3 form-control"
                           type="text"
-                          // value={data["TITLE"]}
+                          value={data["TITLE"]}
                           placeholder="Default input"
                         />
                       </div>
@@ -127,6 +151,7 @@ export default function WebForm() {
                               type="text"
                               value={screencount}
                               onChange={onChange}
+                              disabled={true}
                             />
                             <span className="plus" onClick={addScreen}>
                               +
@@ -141,6 +166,7 @@ export default function WebForm() {
                       </div>
                       <div className="screenvisual">
                         <div className="row">
+                          {console.log("here")}
 
                         </div>
                       </div>

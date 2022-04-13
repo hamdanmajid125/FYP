@@ -19,6 +19,7 @@ def insert(request):
         a = ProVision(userstory)
         if a.errormsg == True:
             screendetails, controldetails = a.main()
+            print(type(screendetails))
             data.append(screendetails)
         else:
             print("prompt")
@@ -26,5 +27,6 @@ def insert(request):
 
 
 def get(request):
-    print(data)
-    return JsonResponse(json.dumps(data), safe=False)
+    jsondata = json.dumps(data[0])
+    print(jsondata)
+    return JsonResponse(jsondata, safe=False)

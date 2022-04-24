@@ -7,9 +7,8 @@ import Images from "../images/imagejson";
 import { useNavigate } from "react-router-dom";
 
 const UserStoryInput = () => {
-  let navigate = useNavigate()
+  let navigate = useNavigate();
   const [userstory, setUserStory] = useState(null);
-  const history = useNavigate();
   const handleChange = (event) => {
     setUserStory((userstory) => ({ ...userstory, body: event.target.value }));
   };
@@ -20,8 +19,8 @@ const UserStoryInput = () => {
       url: "http://127.0.0.1:8000/api/insert/",
       data: userstory,
     }).then((response) => {
-      console.log(response)
-      navigate(`/webform`)
+      console.log(response);
+      navigate(`/webform`);
     });
   };
 

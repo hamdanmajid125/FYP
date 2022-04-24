@@ -42,6 +42,7 @@ export default function WebForm() {
 
           </div>
           <input
+          id={"textboxes".concat(screencount)}
             className="mt-3 form-control form-control-sm"
             type="text"
             placeholder=".form-control-sm"
@@ -83,10 +84,12 @@ export default function WebForm() {
   const addScreen = () => {
 
     screenCount(screencount + 1);
+   
     screenlst.push(
       <div className="col-md-4">
         <div className="screen"></div>
         <input
+        id={"textboxes".concat(screencount)}
           className="mt-3 form-control form-control-sm"
           type="text"
           placeholder=".form-control-sm"

@@ -3,26 +3,22 @@ import Images from "../images/imagejson";
 // import "./custom.js";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+
+import { faWarning } from "@fortawesome/free-solid-svg-icons";
+
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import PropTypes from "prop-types";
 let rendercount = 1;
-let proceedButton = false;
-
-// function useForceUpdate(proceedButton) {
-//   console.log("here");
-//   console.log(proceedButton);
-//   let navigate = useNavigate();
-//   const [value, setValue] = useState(rendercount); // integer state
-//   if (value < 3) {
-//     rendercount = rendercount + 1;
-//     return () => setValue((value) => value + 1); // update the state to
-//   } else {
-//     navigate(`/webform`);
-//   }
-// }
+let screendetail = {}
 
 export default function WebFormDetails(props) {
+  let screenJson = JSON.parse(sessionStorage["Screen Details"])
+
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
-  console.log("reload");
 
   var contdata = require("./control.json");
   var scrdata = require("./json.json");
@@ -58,10 +54,24 @@ export default function WebFormDetails(props) {
     buttonlst.push(btnobj[key]);
   });
 
-  let settitle = scrdata["SCREENS"]["Screen".concat(rendercount.toString())];
+  let settitle = screenJson["Screen".concat(rendercount.toString())]
   var scrcontroldata = contdata["Screen".concat(rendercount).toString()];
   const [txtlst, setTxtLst] = useState([]);
   const [btnlst, setBtnLst] = useState([]);
+  const [checklst, setChkLst] = useState([]);
+  const [cmbolst, setComboLst] = useState([]);
+  const [rdiolst, setRadioLst] = useState([]);
+  const [data, setData] = useState('');
+
+  let handleButtonText = (lst, e, index) => {
+    lst[index] = e.target.value
+    console.log(lst)
+
+  }
+
+
+
+
 
   useEffect(() => {
     Object.keys(scrcontroldata).forEach(function (key) {
@@ -72,25 +82,24 @@ export default function WebFormDetails(props) {
       } else if (key == "CheckBoxes") {
         for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
           // checkCount(chkcount+1)
-          chklst.push(Object.values(scrcontroldata[key])[i]);
+          checklst.push(Object.values(scrcontroldata[key])[i]);
         }
       } else if (key == "ComboBoxes") {
         for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
           // comboCount(combocount+1)
-          combolst.push(Object.values(scrcontroldata[key])[i]);
+          cmbolst.push(Object.values(scrcontroldata[key])[i]);
         }
       } else if (key == "RadioButton") {
         for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
           // radioCount(radiocount+1)
-          radiolst.push(Object.values(scrcontroldata[key])[i]);
+          rdiolst.push(Object.values(scrcontroldata[key])[i]);
         }
       }
     });
     if (buttonlst !== undefined) {
       setBtnLst(buttonlst);
     }
-  }, []);
-
+  }, [rendercount]);
   const back = () => {
     navigate("/newform");
   };
@@ -99,20 +108,80 @@ export default function WebFormDetails(props) {
     textCount(txtcount);
     textCount(event.target.value);
   };
-  function handleClick() {
-    if (rendercount < 3) {
+  function confirmNextScreen() {
+    let screenDetail = {}
+    screenDetail['title'] = document.getElementById("title").value;
+    if (txtlst.length !== 0) {
+      screenDetail['textboxes'] = txtlst;
+    }
+    if (btnlst.length !== 0) {
+      screenDetail['buttons'] = btnlst;
+    }
+    if (checklst.length !== 0) {
+      screenDetail['checkboxes'] = checklst;
+    }
+    if (cmbolst.length !== 0) {
+      screenDetail['comboboxes'] = cmbolst;
+    }
+    if (rdiolst.length !== 0) {
+      screenDetail['radiobuttons'] = rdiolst;
+    }
+    console.log(screenDetail)
+    setTxtLst([])
+    setBtnLst([])
+    screendetail["Screen".concat(rendercount.toString())] = screenDetail
+    if (rendercount < parseInt(sessionStorage['No Of Screen'])) {
       rendercount = rendercount + 1;
       forceUpdate();
     } else {
+      sessionStorage.setItem("Screen Details", JSON.stringify(screendetail));
+      console.log(sessionStorage)
       navigate(`/home`);
     }
   }
-  const [txtcount, textCount] = useState(txtlst.length);
+  function handleClick() {
+    confirmAlert({
+      customUI: ({ onClose }) => {
+        return (
+          <div className='custom-ui shadow-lg p-3 mb-5 bg-white rounded'>
+            <div className="row">
+              <div className="col-md-2">
+
+
+                <FontAwesomeIcon className="warningicon" icon={faWarning} />
+              </div>
+              <div className="col-md-10 msgcontent">
+
+                <h1>Are you Sure about screen details?</h1>
+                <p className="pmsg">You cant change the title of screens in next steps. <br /> Please make sure your screen titles.</p>
+
+              </div>
+              <div className="buttonsec">
+                <button className="btn btn-primary btn-sm msgbtn" onClick={onClose}>No</button>
+                <button className="btn btn-primary btn-sm msgbtn"
+                  onClick={() => {
+                    confirmNextScreen()
+                    onClose();
+                  }}
+                >
+                  Yes, Continue!
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        );
+      }
+    });
+
+
+  }
+  const [txtcount, textCount] = useState(textlst.length);
   const [chkcount, checkCount] = useState(chklst.length);
   const [combocount, comboCount] = useState(combolst.length);
   const [btncount, btnCount] = useState(buttonlst.length);
   const [radiocount, radioCount] = useState(radiolst.length);
-
   return (
     <>
       <Navbar title="PRO-VISION" profileID={1426363} user="Kevin Smith" />
@@ -140,7 +209,8 @@ export default function WebFormDetails(props) {
                       <input
                         className="shadow p-3 form-control scrititle"
                         type="text"
-                        defaultValue={settitle}
+                        id="title"
+                        value={settitle}
                         placeholder="Default input"
                       />
                     </div>
@@ -148,9 +218,9 @@ export default function WebFormDetails(props) {
                       <div className="controlsection">
                         <div className="row">
                           <div className="col-md-6">
-                            <div class="dropdown">
+                            <div className="dropdown">
                               <button
-                                class="btn btn-secondary dropdown-toggle"
+                                className="btn btn-secondary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -159,27 +229,30 @@ export default function WebFormDetails(props) {
                                 TextBoxes
                               </button>
                               <ul
-                                class="dropdown-menu"
+                                className="dropdown-menu"
                                 aria-labelledby="dropdownMenuButton1"
                               >
                                 {txtcount == 0
                                   ? textlst.map((textlst, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+
+
                                           aria-label=".form-control-sm example"
                                           defaultValue={textlst}
                                         />
                                       </li>
                                     ))
-                                  : txtlst.map((txtlst, index) => (
+                                  : txtlst.map((txtindex, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        onChange={e => handleButtonText(txtlst, e, index)}
                                           aria-label=".form-control-sm example"
-                                          defaultValue={txtlst}
+                                        defaultValue={txtindex}
                                         />
                                       </li>
                                     ))}
@@ -200,7 +273,8 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   txtcount == 0
-                                    ? contdata.Screen1.TextBoxes.length
+
+                                    ? (contdata.Screen1.TextBoxes != undefined ? contdata.Screen1.TextBoxes.length : 0)
                                     : txtlst.length
                                 }
                                 onChange={handletxtChange}
@@ -217,9 +291,9 @@ export default function WebFormDetails(props) {
                             </div>
                           </div>
                           <div className="col-md-6">
-                            <div class="dropdown">
+                            <div className="dropdown">
                               <button
-                                class="btn btn-secondary dropdown-toggle"
+                                className="btn btn-secondary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -228,27 +302,29 @@ export default function WebFormDetails(props) {
                                 ComboBoxes
                               </button>
                               <ul
-                                class="dropdown-menu"
+                                className="dropdown-menu"
                                 aria-labelledby="dropdownMenuButton1"
                               >
-                                {txtcount == 0
+                                {combocount == 0
                                   ? combolst.map((combolst, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
                                           aria-label=".form-control-sm example"
                                           defaultValue={combolst}
                                         />
                                       </li>
                                     ))
-                                  : txtlst.map((combolst, index) => (
+                                  : cmbolst.map((comboindex, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        onChange={e => handleButtonText(cmbolst, e, index)}
+
                                           aria-label=".form-control-sm example"
-                                          defaultValue={combolst}
+                                        defaultValue={comboindex}
                                         />
                                       </li>
                                     ))}
@@ -258,8 +334,8 @@ export default function WebFormDetails(props) {
                               <button
                                 className="minus controlcc"
                                 onClick={() => {
-                                  comboCount(combocount - 1);
-                                  combolst.pop();
+                                  comboCount(cmbolst - 1);
+                                  cmbolst.pop();
                                 }}
                               >
                                 -
@@ -269,10 +345,8 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   combocount == 0
-                                    ? contdata.Screen1.ComboBoxes == undefined
-                                      ? 0
-                                      : null
-                                    : combolst.length
+                                    ? (contdata.Screen1.ComboBoxes != undefined ? contdata.Screen1.ComboBoxes.length : 0)
+                                    : cmbolst.length
                                 }
                                 onChange={handletxtChange}
                               />
@@ -280,7 +354,7 @@ export default function WebFormDetails(props) {
                                 className="plus controlcc"
                                 onClick={() => {
                                   comboCount(combocount + 1);
-                                  txtlst.push("combobox");
+                                  cmbolst.push("combobox");
                                 }}
                               >
                                 +
@@ -291,9 +365,9 @@ export default function WebFormDetails(props) {
                         <div className="space"></div>
                         <div className="row">
                           <div className="col-md-6">
-                            <div class="dropdown">
+                            <div className="dropdown">
                               <button
-                                class="btn btn-secondary dropdown-toggle"
+                                className="btn btn-secondary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -302,27 +376,29 @@ export default function WebFormDetails(props) {
                                 CheckBoxes
                               </button>
                               <ul
-                                class="dropdown-menu"
+                                className="dropdown-menu"
                                 aria-labelledby="dropdownMenuButton1"
                               >
                                 {chkcount == 0
                                   ? chklst.map((chklst, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
                                           aria-label=".form-control-sm example"
                                           defaultValue={chklst}
                                         />
                                       </li>
                                     ))
-                                  : chklst.map((chklst, index) => (
+                                  : checklst.map((checkindex, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        onChange={e => handleButtonText(checklst, e, index)}
+
                                           aria-label=".form-control-sm example"
-                                          defaultValue={chklst}
+                                        defaultValue={checkindex}
                                         />
                                       </li>
                                     ))}
@@ -333,7 +409,7 @@ export default function WebFormDetails(props) {
                                 className="minus controlcc"
                                 onClick={() => {
                                   checkCount(chkcount - 1);
-                                  chklst.pop();
+                                  checklst.pop();
                                 }}
                               >
                                 -
@@ -343,10 +419,9 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   chkcount == 0
-                                    ? contdata.Screen1.CheckBoxes == undefined
-                                      ? 0
-                                      : null
-                                    : chklst.length
+                                    ? (contdata.Screen1.CheckBoxes != undefined ? contdata.Screen1.CheckBoxes.length : 0)
+
+                                    : checklst.length
                                 }
                                 onChange={handletxtChange}
                               />
@@ -354,7 +429,7 @@ export default function WebFormDetails(props) {
                                 className="plus controlcc"
                                 onClick={() => {
                                   checkCount(chkcount + 1);
-                                  chklst.push("checkbox");
+                                  checklst.push("checkbox");
                                 }}
                               >
                                 +
@@ -362,9 +437,9 @@ export default function WebFormDetails(props) {
                             </div>
                           </div>
                           <div className="col-md-6">
-                            <div class="dropdown">
+                            <div className="dropdown">
                               <button
-                                class="btn btn-secondary dropdown-toggle"
+                                className="btn btn-secondary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -373,27 +448,28 @@ export default function WebFormDetails(props) {
                                 RadioButtons
                               </button>
                               <ul
-                                class="dropdown-menu"
+                                className="dropdown-menu"
                                 aria-labelledby="dropdownMenuButton1"
                               >
                                 {radiocount == 0
                                   ? radiolst.map((radiolst, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
                                           aria-label=".form-control-sm example"
                                           defaultValue={radiolst}
                                         />
                                       </li>
                                     ))
-                                  : radiolst.map((radiolst, index) => (
+                                  : rdiolst.map((radioindex, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        onChange={e => handleButtonText(rdiolst, e, index)}
                                           aria-label=".form-control-sm example"
-                                          defaultValue={radiolst}
+                                        defaultValue={radioindex}
                                         />
                                       </li>
                                     ))}
@@ -404,7 +480,7 @@ export default function WebFormDetails(props) {
                                 className="minus controlcc"
                                 onClick={() => {
                                   radioCount(radiocount - 1);
-                                  radiolst.pop();
+                                  rdiolst.pop();
                                 }}
                               >
                                 -
@@ -414,10 +490,9 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   radiocount == 0
-                                    ? contdata.Screen1.RadioBoxes == undefined
-                                      ? 0
-                                      : null
-                                    : radiolst.length
+                                    ? (contdata.Screen1.RadioButtons != undefined ? contdata.Screen1.RadioButtons.length : 0)
+
+                                    : rdiolst.length
                                 }
                                 onChange={handletxtChange}
                               />
@@ -425,7 +500,7 @@ export default function WebFormDetails(props) {
                                 className="plus controlcc"
                                 onClick={() => {
                                   radioCount(radiocount + 1);
-                                  txtlst.push("radiobox");
+                                  rdiolst.push("radiobox");
                                 }}
                               >
                                 +
@@ -436,9 +511,9 @@ export default function WebFormDetails(props) {
                         <div className="space"></div>
                         <div className="row">
                           <div className="col-md-6">
-                            <div class="dropdown">
+                            <div className="dropdown">
                               <button
-                                class="btn btn-secondary dropdown-toggle"
+                                className="btn btn-secondary dropdown-toggle"
                                 type="button"
                                 id="dropdownMenuButton1"
                                 data-bs-toggle="dropdown"
@@ -447,27 +522,34 @@ export default function WebFormDetails(props) {
                                 Buttons
                               </button>
                               <ul
-                                class="dropdown-menu"
+                                className="dropdown-menu"
                                 aria-labelledby="dropdownMenuButton1"
                               >
                                 {btncount == 0
+
                                   ? buttonlst.map((btnlst, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        id={index}
+
                                           aria-label=".form-control-sm example"
                                           defaultValue={btnlst}
                                         />
                                       </li>
                                     ))
-                                  : btnlst.map((btnlst, index) => (
+                                  : btnlst.map((btnindex, index) => (
                                       <li>
                                         <input
-                                          class="dropdown-item form-control form-control-sm"
+                                        className="dropdown-item form-control form-control-sm"
                                           type="text"
+                                        // onKeyPress={handleInputChange}
+                                        id={"btnlst".concat(index.toString())}
+                                        onChange={e => handleButtonText(btnlst, e, index)}
+
                                           aria-label=".form-control-sm example"
-                                          defaultValue={btnlst}
+                                        defaultValue={btnindex}
                                         />
                                       </li>
                                     ))}
@@ -479,6 +561,7 @@ export default function WebFormDetails(props) {
                                 onClick={() => {
                                   btnCount(btncount - 1);
                                   btnlst.pop();
+                                  // console.log(btnlst);
                                 }}
                               >
                                 -
@@ -498,7 +581,7 @@ export default function WebFormDetails(props) {
                                 onClick={() => {
                                   btnCount(btncount + 1);
                                   btnlst.push("button");
-                                  console.log(btnlst);
+                                  // console.log(btnlst);
                                 }}
                               >
                                 +
@@ -531,7 +614,7 @@ export default function WebFormDetails(props) {
                   <button
                     type="button"
                     onClick={back}
-                    class="btn btn-outline-primary"
+                    className="btn btn-outline-primary"
                   >
                     Back
                   </button>
@@ -541,7 +624,7 @@ export default function WebFormDetails(props) {
                   <button
                     type="button"
                     onClick={handleClick}
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                   >
                     Proceed
                   </button>

@@ -22,7 +22,7 @@ export default function WebFormDetails(props) {
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
   var contdata = require("./control.json");
-
+  var scrdata = require("./json.json");
 
   let btnobj = scrdata["BUTTONS"]["Screen".concat(rendercount)];
 

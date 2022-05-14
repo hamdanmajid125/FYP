@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Navbar from "../components/Navbar";
 import Images from "../images/imagejson";
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader";
 
 const UserStoryInput = () => {
   let navigate = useNavigate();
@@ -14,17 +15,17 @@ const UserStoryInput = () => {
   };
 
   const handleSubmit = async () => {
+    navigate('/spinner');
     await axios({
       method: "post",
       url: "http://127.0.0.1:8000/api/insert/",
       data: userstory,
     }).then((response) => {
       console.log(response);
-      navigate(`/webform`);
     });
   };
-
   return (
+
     <div>
       <Navbar />
       <div className="container webformcontainer">

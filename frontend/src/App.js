@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import WebForm from "./pages/WebForm";
 import UserStoryInput from "./pages/UserStoryInput";
 import WebFormDetails from "./pages/WebFormDetails";
+import Loader from "./pages/Loader";
 
 const App = () => {
   return (
@@ -15,6 +16,8 @@ const App = () => {
         <Route exact path="/home" element={<Home />} />
         <Route exact path="/userstory" element={<UserStoryInput />} />
         <Route exact path="/webform" element={<WebForm />} />
+        <Route exact path="/spinner" element={<Loader />} />
+
         <Route exact path="/webformdetails" element={<WebFormDetails />} />
       </Routes>
     </Router>

@@ -10,11 +10,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle, faTriangleExclamation, faWarning } from "@fortawesome/free-solid-svg-icons";
 let first = true;
 export default function WebForm() {
+
   let list = []
   let data = require(`./json.json`);
   const [hide, setHide] = useState(true)
   const [screenstitles, setScreensTitle] = useState("");
-  let [screencount, screenCount] = useState(data["NOOFSCREENS"]);
   let navigate = useNavigate();
   const [screenlst, screenLst] = useState([]);
   const [txtscreendrpdown, textDrpDwn] = useState([]);
@@ -25,6 +25,7 @@ export default function WebForm() {
   let screenJson = {}
 
   let [errorstr, setError] = useState("Screen ")
+  let [screencount, screenCount] = useState(data["NOOFSCREENS"]);
 
   const saveScreenTitle = () => {
     sessionStorage.clear()
@@ -104,11 +105,29 @@ export default function WebForm() {
     }
 
   };
+  useEffect(() => {
+    screenlst.push(
+      <div className="col-md-4">
+        <div className="screen"> </div>
+        <input
+          id={"textboxes".concat(screencount)}
+          className="mt-3 form-control form-control-sm"
+          type="text"
+          placeholder=".form-control-sm"
+        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
+        />
+      </div>
+
+    );
+    console.log('sdkpod')
+
+  }, [screencount])
 
 
   const firstTime = () => {
     for (let i = 0; i < screencount; i++) {
       screenlisttile.push(data["SCREENS"]["Screen" + (i + 1).toString()][0]);
+
       screenlst.push(
         <div className="col-md-4">
           <div className="screen"></div>
@@ -146,18 +165,8 @@ export default function WebForm() {
   const addScreen = () => {
     screenCount(screencount + 1);
 
-    screenlst.push(
-      <div className="col-md-4">
-        <div className="screen"> </div>
-        <input
-          id={"textboxes".concat(screencount)}
-          className="mt-3 form-control form-control-sm"
-          type="text"
-          placeholder=".form-control-sm"
-        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
-        />
-      </div>
-    );
+
+    console.log(screenlst.length)
     // console.log(screencount)
   };
   const minusScreen = () => {
@@ -266,11 +275,9 @@ export default function WebForm() {
                     </div>
                     <div className="innerformcomp1">
                       <div className="screenvisual">
-                        <div className="row"> {screenlst} </div>
+                        <div className="row"> {console.log(screenlst)} </div>
                       </div>
-                      <div className="screenvisual">
-                        <div className="row"> </div>
-                      </div>
+
                     </div>
                   </div>
                 </div>

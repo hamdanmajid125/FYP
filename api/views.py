@@ -12,7 +12,7 @@ from django.http import JsonResponse
 data = []
 
 
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 def insert(request):
     if request.method == 'POST':
         userstory = request.data['body']
@@ -24,10 +24,10 @@ def insert(request):
             print(json.dumps(controldetails))
         else:
             print("prompt")
-        return Response(userstory)
+        return HttpResponse(userstory)
 
 
-def get(request):
+def get_screens(request):
     jsondata = json.dumps(data[0])
     print(jsondata)
     return JsonResponse(jsondata, safe=False)

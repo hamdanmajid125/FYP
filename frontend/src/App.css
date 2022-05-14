@@ -957,3 +957,10 @@ input.dropdown-item.form-control.form-control-sm:focus {
   background: #717fe0;
   color: white;
 }
+.verticallycenter {
+  height: 100vh;
+}
+
+.message {
+  margin-top: 1vh;
+}

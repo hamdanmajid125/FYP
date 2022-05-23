@@ -965,3 +965,13 @@ input.dropdown-item.form-control.form-control-sm:focus {
   margin-top: 1vh;
 }
 .flex-custom {display: flex;justify-content: space-evenly;}
+.loadercard.card {background: #d9d9d9ad;height: 50%;width: 50%;}
+.loadercard.card  h4{
+  color: #636cff;
+}
+.loadercard.card span {
+  position: absolute;
+  color: #636cff;
+  bottom: 84px;
+  left: 31%;
+}

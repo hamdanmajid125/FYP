@@ -12,6 +12,7 @@ import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import PropTypes from "prop-types";
+import axios from "axios";
 let rendercount = 1;
 let screendetail = {}
 
@@ -22,7 +23,7 @@ export default function WebFormDetails(props) {
 
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
-  var contdata =JSON.parse(JSON.parse(sessionStorage['contolsdata']))
+  var contdata = JSON.parse(JSON.parse(sessionStorage['contolsdata']))
   console.log(contdata)
   var scrdata = JSON.parse(JSON.parse(sessionStorage['processdata']))
   console.log(scrdata)
@@ -36,17 +37,17 @@ export default function WebFormDetails(props) {
       : [];
   var chklst =
     contdata["Screen".concat(rendercount).toString()]["CheckBoxes"] !==
-    undefined
+      undefined
       ? contdata["Screen".concat(rendercount).toString()]["CheckBoxes"]
       : [];
   var combolst =
     contdata["Screen".concat(rendercount).toString()]["ComboBoxes"] !==
-    undefined
+      undefined
       ? contdata["Screen".concat(rendercount).toString()]["ComBoxes"]
       : [];
   var radiolst =
     contdata["Screen".concat(rendercount).toString()]["RadioButtons"] !==
-    undefined
+      undefined
       ? contdata["Screen".concat(rendercount).toString()]["RadioButtons"]
       : [];
   var buttonlst =
@@ -135,9 +136,20 @@ export default function WebFormDetails(props) {
       forceUpdate();
     } else {
       sessionStorage.setItem("Screen Details", JSON.stringify(screendetail));
-      console.log(sessionStorage)
-      navigate(`/home`);
+      newscreen();
+      navigate(`/progress`);
     }
+  }
+  const newscreen = async () =>{
+   
+    await axios({
+      method: "post",
+      url: "http://127.0.0.1:8000/api/wireframe/",
+      data: { "controls": JSON.parse(JSON.parse(sessionStorage['contolsdata'])),"screendetails": JSON.parse(sessionStorage['Screen Details']) },
+    }).then((response) => {
+      console.log(response);
+    });
+
   }
   function handleClick() {
     confirmAlert({
@@ -234,28 +246,28 @@ export default function WebFormDetails(props) {
                               >
                                 {txtcount == 0
                                   ? textlst.map((textlst, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
 
 
-                                          aria-label=".form-control-sm example"
-                                          defaultValue={textlst}
-                                        />
-                                      </li>
-                                    ))
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={textlst}
+                                      />
+                                    </li>
+                                  ))
                                   : txtlst.map((txtindex, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         onChange={e => handleButtonText(txtlst, e, index)}
-                                          aria-label=".form-control-sm example"
+                                        aria-label=".form-control-sm example"
                                         defaultValue={txtindex}
-                                        />
-                                      </li>
-                                    ))}
+                                      />
+                                    </li>
+                                  ))}
                               </ul>
                             </div>
                             <div className="number text-right controlnumberconter">
@@ -307,27 +319,27 @@ export default function WebFormDetails(props) {
                               >
                                 {combocount == 0
                                   ? combolst.map((combolst, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
-                                          aria-label=".form-control-sm example"
-                                          defaultValue={combolst}
-                                        />
-                                      </li>
-                                    ))
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={combolst}
+                                      />
+                                    </li>
+                                  ))
                                   : cmbolst.map((comboindex, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         onChange={e => handleButtonText(cmbolst, e, index)}
 
-                                          aria-label=".form-control-sm example"
+                                        aria-label=".form-control-sm example"
                                         defaultValue={comboindex}
-                                        />
-                                      </li>
-                                    ))}
+                                      />
+                                    </li>
+                                  ))}
                               </ul>
                             </div>
                             <div className="number text-right controlnumberconter">
@@ -381,27 +393,27 @@ export default function WebFormDetails(props) {
                               >
                                 {chkcount == 0
                                   ? chklst.map((chklst, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
-                                          aria-label=".form-control-sm example"
-                                          defaultValue={chklst}
-                                        />
-                                      </li>
-                                    ))
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={chklst}
+                                      />
+                                    </li>
+                                  ))
                                   : checklst.map((checkindex, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         onChange={e => handleButtonText(checklst, e, index)}
 
-                                          aria-label=".form-control-sm example"
+                                        aria-label=".form-control-sm example"
                                         defaultValue={checkindex}
-                                        />
-                                      </li>
-                                    ))}
+                                      />
+                                    </li>
+                                  ))}
                               </ul>
                             </div>
                             <div className="number text-right controlnumberconter">
@@ -453,26 +465,26 @@ export default function WebFormDetails(props) {
                               >
                                 {radiocount == 0
                                   ? radiolst.map((radiolst, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
-                                          aria-label=".form-control-sm example"
-                                          defaultValue={radiolst}
-                                        />
-                                      </li>
-                                    ))
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={radiolst}
+                                      />
+                                    </li>
+                                  ))
                                   : rdiolst.map((radioindex, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         onChange={e => handleButtonText(rdiolst, e, index)}
-                                          aria-label=".form-control-sm example"
+                                        aria-label=".form-control-sm example"
                                         defaultValue={radioindex}
-                                        />
-                                      </li>
-                                    ))}
+                                      />
+                                    </li>
+                                  ))}
                               </ul>
                             </div>
                             <div className="number text-right controlnumberconter">
@@ -528,31 +540,31 @@ export default function WebFormDetails(props) {
                                 {btncount == 0
 
                                   ? buttonlst.map((btnlst, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         id={index}
 
-                                          aria-label=".form-control-sm example"
-                                          defaultValue={btnlst}
-                                        />
-                                      </li>
-                                    ))
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={btnlst}
+                                      />
+                                    </li>
+                                  ))
                                   : btnlst.map((btnindex, index) => (
-                                      <li>
-                                        <input
+                                    <li>
+                                      <input
                                         className="dropdown-item form-control form-control-sm"
-                                          type="text"
+                                        type="text"
                                         // onKeyPress={handleInputChange}
                                         id={"btnlst".concat(index.toString())}
                                         onChange={e => handleButtonText(btnlst, e, index)}
 
-                                          aria-label=".form-control-sm example"
+                                        aria-label=".form-control-sm example"
                                         defaultValue={btnindex}
-                                        />
-                                      </li>
-                                    ))}
+                                      />
+                                    </li>
+                                  ))}
                               </ul>
                             </div>
                             <div className="number text-right controlnumberconter">

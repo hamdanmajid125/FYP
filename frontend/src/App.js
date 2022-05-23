@@ -7,6 +7,8 @@ import WebForm from "./pages/WebForm";
 import UserStoryInput from "./pages/UserStoryInput";
 import WebFormDetails from "./pages/WebFormDetails";
 import Loader from "./pages/Loader";
+import ProgressBar from "./pages/ProgressBar";
+
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
         <Route exact path="/userstory" element={<UserStoryInput />} />
         <Route exact path="/webform" element={<WebForm />} />
         <Route exact path="/spinner" element={<Loader />} />
+        <Route exact path="/progress" element={<ProgressBar />} />
+
 
         <Route exact path="/webformdetails" element={<WebFormDetails />} />
       </Routes>

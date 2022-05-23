@@ -8,8 +8,12 @@ const Images=
         leftimage: require('./Autofill Webform/leftsteps.png'),
         rectangle:require('./Rectangle.png'),
         cloud:require('./cloud.png'),
+        
    
         },
+    loader:{
+        bar: require('./loader.gif'),
+    },
     userstory:{
         rightimage: require('./Input user stories/rightimage.png'),
         steps: require('./Input user stories/steps.png'),

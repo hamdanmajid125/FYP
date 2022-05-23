@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 import json
 from .models import Project
 from .serializers import ProjectSerializers
-from .corelogic import ProVision, VisionStatement
+from .corelogic import ProVision, VisionStatement, WireFrame
 from django.http import JsonResponse
 data = []
 
@@ -48,3 +48,13 @@ def get_controls(request):
     jsondata = json.dumps(data[1])
     print(jsondata)
     return JsonResponse(jsondata, safe=False)
+
+
+@api_view(['POST', 'GET'])
+def get_wireframe(request):
+
+    screendetails  = request.data['screendetails']
+    controls  = request.data['controls']
+    a = WireFrame(screendetails,controls)
+    boolvalue = a.main()
+    return HttpResponse(boolvalue)

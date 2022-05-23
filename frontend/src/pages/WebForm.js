@@ -12,23 +12,27 @@ let first = true;
 export default function WebForm() {
 
   let list = []
-  let data = require(`./json.json`);
   const [hide, setHide] = useState(true)
   const [screenstitles, setScreensTitle] = useState("");
   let navigate = useNavigate();
-  const [screenlst, screenLst] = useState([]);
+  let [screenlst, screenLst] = useState([]);
   const [txtscreendrpdown, textDrpDwn] = useState([]);
   const [radioscreendrpdown, radioDrpDwn] = useState([]);
   const [comboscreendrpdown, comboDrpDwn] = useState([]);
   let [screenlisttile, screenListTitle] = useState([]);
   let bool = false;
   let screenJson = {}
+  let data =JSON.parse(JSON.parse(sessionStorage['processdata']))
+  // var data = require("./json.json");
 
+
+  console.log(data)
   let [errorstr, setError] = useState("Screen ")
   let [screencount, screenCount] = useState(data["NOOFSCREENS"]);
+  console.log(screencount);
 
   const saveScreenTitle = () => {
-    sessionStorage.clear()
+    
     let projectTitle = document.getElementById("projecttitle").value;
     sessionStorage.setItem("Project Title", projectTitle);
     sessionStorage.setItem("Screen Details", JSON.stringify(screenJson));
@@ -105,23 +109,6 @@ export default function WebForm() {
     }
 
   };
-  useEffect(() => {
-    screenlst.push(
-      <div className="col-md-4">
-        <div className="screen"> </div>
-        <input
-          id={"textboxes".concat(screencount)}
-          className="mt-3 form-control form-control-sm"
-          type="text"
-          placeholder=".form-control-sm"
-        // value={data["SCREENS"]["Screen" + (i + 1).toString()]}
-        />
-      </div>
-
-    );
-    console.log('sdkpod')
-
-  }, [screencount])
 
 
   const firstTime = () => {
@@ -149,10 +136,7 @@ export default function WebForm() {
     first = false;
   }
 
-  // const getdata = async () => {
-  //   let response = await fetch("http://127.0.0.1:8000/api/get/");
-  //   let data = await response.json();
-  // }
+
 
 
   const onChange = (event) => {
@@ -164,10 +148,20 @@ export default function WebForm() {
 
   const addScreen = () => {
     screenCount(screencount + 1);
-
-
-    console.log(screenlst.length)
-    // console.log(screencount)
+    screenlst.push(
+      <div className="col-md-4">
+        <div className="screen"></div>
+        <input
+          id={"textboxes".concat(screencount)}
+          className="mt-3 form-control form-control-sm"
+          type="text"
+          placeholder=".form-control-sm"
+      
+        />
+      </div>
+    )
+    console.log(screenlst)
+    screenLst(screenlst)
   };
   const minusScreen = () => {
     if (screencount > 1) {
@@ -275,7 +269,7 @@ export default function WebForm() {
                     </div>
                     <div className="innerformcomp1">
                       <div className="screenvisual">
-                        <div className="row"> {console.log(screenlst)} </div>
+                        <div className="row"> {screenlst} </div>
                       </div>
 
                     </div>

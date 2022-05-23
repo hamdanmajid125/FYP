@@ -2,8 +2,9 @@ import spacy
 import re
 import string
 from spacy.matcher import Matcher
-from nltk.corpus import wordnet 
-# import textacy
+from nltk.corpus import wordnet
+
+import itertools
 
 json={
   "RadioButton": {
@@ -171,8 +172,10 @@ class ProVision:
             else:
                 corrsenbool.append(False)
         if(False in corrsenbool):
+            print("op")
             return self.Error_Handle_Sent(corrsenbool)
         else:
+            print("here")
             return True
     def main(self):
         screentitle = {}
@@ -509,4 +512,313 @@ class ProVision:
     def find_sents(self,doc):
         sentences = list(doc.sents)
         return sentences
+
+
+class VisionStatement:
+    def __init__(self, lst):
+        self.nlp = spacy.load("en_core_web_sm")
+        self.lst = self.find_sents(lst)
+       
+#         self.userstory = userstory
+#         self.list_of_sents = self.find_sents(doc)
+        self.errormsg = self.preprocess(self.lst)
+        self.controloutput = {}
+        self.output = {}
+    def preprocess(self,lst):
+        return True
+    def find_sents(self,doc):
+        lst= []
+        if(type(doc) == str):
+            doc = self.nlp(doc)
+        sentences = list(doc.sents)
+        for i in sentences:
+            lst.append(i.text)
+        return lst
+            
+    def main(self):
+        screentitle = {}
+        controlsdic = {}
+        buttondic = {}
+       
+     
+        for i in range(len(self.lst)):
+            controlst = list(self.controls(self.lst[i]))
+        #     print('Controls: ',controls)
+            btnlst = self.buttons_extraction(str(controlst[1]))
+        #     print('Buttons: ',btnlst)
+            if(type(btnlst) == list):
+                buttondic['Screen'+str(int(i+1))] = [s.strip() for s in btnlst]
+            screentitle['Screen'+str(int(i+1))] = self.screen_title_detection(self.lst[i])            
+            controlsdic['Screen'+str(int(i+1))] = [s.strip() for s in controlst[0]]
+            a = WordBank(self.detectstopwordsfromlist([s.strip() for s in controlst[0]]))
+            controltitle = a.get_controls()
+            self.controloutput['Screen'+str(int(i+1))] = controltitle
+        titleOfProject = self.projecttitle(self.lst[0])
+        self.output['TITLE'] = titleOfProject
+        self.output['SCREENS'] = screentitle
+        self.output['CONTROLS'] = controlsdic
+        self.output['BUTTONS'] = buttondic
+        self.output['NOOFSCREENS'] = len(self.lst)
+        print(self.output,self.controloutput)
+        return self.output,self.controloutput
+    
+    def detectstopwordsfromlist(self,controls):
+        for i in range(len(controls)):
+            tempstr  = ""
+            nlpstr = self.nlp(controls[i])
+            for token in nlpstr:
+                if not token.is_stop:
+                    tempstr = tempstr + token.text+' '
+                if(tempstr != ""):
+                    controls[i] = tempstr
+            nlpstr = self.nlp(controls[i])
+            tempstr  = ""
+            for chunk in nlpstr.noun_chunks:
+                tempstr = tempstr + chunk.text + ' '
+        return controls
+    def getsynomynlst(self,lst):
+        synlst = list()
+        for i in range(len(lst)):
+            for synset in wordnet.synsets(lst[i]):
+                for lemma in synset.lemmas():
+                    synlst.append(lemma.name())
+        return synlst
+
+    def find_title_of_project(self,sent):
+          # If project title in Quotation Marks then return the title
+            nlp = spacy.load("en_core_web_sm")
+            title = self.nlp(str(sent))
+            matcher = Matcher(self.nlp.vocab)
+            pattern = [
+                [{'ORTH': '"'},
+                 {'OP': '*'},
+                 {'ORTH': '"'}]
+            ]
+            matcher.add('TEST', pattern)
+            lst = [title[start:end] for _, start, end in matcher(title)]  # generating the list of all the possible match of "TITLE"
+            if(lst != []):  # Checking if we find the
+                isquote = True
+                finaltitle = re.findall('"([^"]*)"', str(lst[0]))  # All words in " " in lst[0]
+                if(len(finaltitle) == 1):  # checking list must contain only one title
+                    return finaltitle[0]
+            # end Quotation marks
+
+            else:
+                # Try to catch Proper Noun
+                lst = []
+                tempstr = ''
+                concat = False
+                propernountitlelst = []
+                for ent in title.ents:
+                    lst.append(ent)
+                for postagsent in title.sents:
+                    for token in postagsent:
+                        if(token.pos_ == 'PROPN'):
+                            concat = True
+                            tempstr = tempstr + str(token) + ' '
+                        else:
+                            concat = False
+                            if(tempstr != ''):
+                                propernountitlelst.append(tempstr.strip())
+                if(len(lst) == len(propernountitlelst) and (lst !=[] and propernountitlelst !=[])): 
+                    if(len(lst[0]) > len(propernountitlelst[0])): #If sales propernoun and  entties lst matches then return
+                        return lst[0]
+                    else:
+                        return propernountitlelst[0]
+                elif(propernountitlelst != [] and len(propernountitlelst) == 1):  # If dont matches then return propernoun index at 0
+                    return propernountitlelst[0]  # given that there is only one proper noun
+                else:
+                    # If not any proper noun found then work on noun
+                    chunklst, notstop = [], [] #nounchunklst 
+                    chunkstr, title = '', '' 
+                    nlp = spacy.load("en_core_web_sm")
+                    txt = str(sent)
+                    desc = self.nlp(txt)
+                    for chunk in desc.noun_chunks:
+                        chunklst.append(chunk.text)  # Generating noun chunk list
+
+                    for i in range(len(chunklst)):
+                        chunkstr = chunkstr + chunklst[i]+' '  # concating all chunklst noun to get possible title
+
+                    desc = self.nlp(chunkstr)
+                    notstop = self.detectstopwords(desc)  # now check 'chunkstr' if there is stopwords or not and get list of notstopwords
+
+                    stopstr = ''
+                    for i in range(len(notstop)):  # concat notstopwords list
+                        stopstr = stopstr + notstop[i]+' '
+                    desc = self.nlp(txt)
+                    titlewords = ["name", "title","call","entitle"]
+                    synlst = self.getsynomynlst(titlewords)  # if above lst words in stopwords then pop then concat
+                    for i in range(len(notstop)):
+                        if(len(notstop) > i):
+                            if(notstop[i] in synlst):
+                                notstop.pop(i)
+                    for i in range(len(notstop)):
+                        title = title + notstop[i]
+                    else:
+                        return title
+
+    def detectstopwords(self,string):
+        stopwords = ""
+        if(type(string) == list):
+            for i in range(len(string)):
+                tempstrnlp = self.nlp(string[i].strip())
+                tempstr = ""
+                for token in tempstrnlp:
+                    if not token.is_stop:
+
+                        tempstr = tempstr + token.text+' '
+                if(string != ""):
+                    string[i] = tempstr.strip()
+                    return string
+        else:
+    
+            for token in string:
+                if not token.is_stop:
+                    stopwords = stopwords + token.text + " "
+
+            return stopwords
+
+    def nounchunklist(self,firstsent):
+            chunklst = []
+            if(type(firstsent) == str):
+                desc = self.nlp(firstsent)
+                for i in desc.noun_chunks:
+
+                    chunklst.append(i.text)
+                if(chunklst != []):
+                    return chunklst
+            elif(type(firstsent) == list):
+            #             print(firstsent)
+                firstsent = firstsent.split(',')
+
+            matcher = Matcher(nlp.vocab)
+            sentence = self.nlp(string)
+            pattern = [
+                [{'POS': 'VERB', 'OP': '?'},
+                {'POS': 'ADV', 'OP': '*'},
+                {'POS': 'VERB', 'OP': '+'}]
+            ]
+            matcher.add('GRAMMAR', pattern)
+            lst = [sentence[start:end] for _, start, end in matcher(sentence)]
+            return lst
+
+    def projecttitle(self,userstory):
+        screen_title = self.detectstopwords(self.nlp(self.nounchunklist(re.findall("who need (.*?),", userstory)[0])[0]))
+        project_title1 = self.detectstopwords(self.nounchunklist(re.findall(",(.*?)that", userstory)[0]))
+        project_title2 = self.find_title_of_project(re.findall(",(.*?)that", userstory)[0])
+
+        try:
+            project_title2.index(project_title1[0])
+        except ValueError:
+            return project_title2
+        else:
+            return project_title1[0]
+    def is_empty_index(self,lst):
+        new = []
+        for i in lst:
+            if(i != ""):
+                new.append(i)
+        return new
+
+    def token_lst_to_str(self,lst):
+        new = []
+        for i in lst:
+            if(type(i) != str):
+                if(i.text != ""):
+                    new.append(i.text)
+            else:
+                new.append(i)
+        return new
+
+    def screen_title_detection(self,userstory):
+        screen_title = self.detectstopwords(
+            self.nlp(self.nounchunklist(re.findall("who need (.*?),", userstory)[0])[0]))
+        return screen_title
+
+    def contains_punct(buttonlst):
+        print(buttonlst)
+        print(type(buttonlst))
+
+        lst = []
+        if(', ' in buttonlst):
+            pass
+
+    def controls(self,userstory):
+        found = False
+        string = self.nlp(re.findall("that.*", userstory)[0])
+        original =  ["details", "providing", "giving","description","title",'need']
+        lstsynomy = self.getsynomynlst(original)
+        regexstr = ""
+
+    #     first occurance of any orignial synmony list in the sentance after the 'that' clause
+        for item in string:
+            for i in lstsynomy:
+                if item.lemma_ == i:
+                    print(item.lemma_)
+                    found = True
+                    break
+            regexstr = regexstr + item.text + ' '
+            if(found == True):
+                break
+        regexlst = re.findall(('(?<={0}).*so that'.format(str(regexstr))), string.text)
+        control_list = self.nounchunklist(regexlst[0])
+        buttonregex = re.findall(('(?<={0})(.*)'.format(str(regexlst))), string.text)[0]
+        print(self.is_empty_index(self.detectstopwords(control_list)), buttonregex)
+        return self.is_empty_index(self.detectstopwords(control_list)), buttonregex
+
+    def onelist(self,lst):
+        new = []
+        for item in itertools.chain.from_iterable(lst):
+            new.append(item)
+        return new
+    def verbchunk(self,string):
+        matcher = Matcher(self.nlp.vocab)
+        sentence = self.nlp(string)
+        pattern =[
+                [{'POS': 'VERB', 'OP': '?'},
+                {'POS': 'ADV', 'OP': '*'},
+                {'POS': 'VERB', 'OP': '+'}]
+                    ]
+        matcher.add('GRAMMAR', pattern)
+        lst = [sentence[start:end] for _, start, end in matcher(sentence)]
+        return lst
+    def buttons_extraction(self,string):
+
+        if("so that" in string):
+            buttonlist = []
+            x = string.split('so that')[1].strip()
+
+            stop = self.detectstopwords(self.nlp(x))
+
+            verb = self.verbchunk(x)
+            if(verb != [] or verb != ""):
+                buttonlist.append(self.token_lst_to_str(verb))
+
+            title = self.nlp(str(x))
+            matcher = Matcher(self.nlp.vocab)
+            pattern = [{'POS': 'VERB'},
+                       {'POS': 'NOUN'}]
+            matcher.add('TEST1', [pattern])
+            matcherlst = [title[start:end] for _, start, end in matcher(title)]
+            if(matcherlst == []):
+
+                title = self.nlp(str(stop))
+                matcher = Matcher(self.nlp.vocab)
+                pattern = [{'POS': 'NOUN'},
+                           {'POS': 'NOUN'}]
+                matcher.add('TEST2', [pattern])
+                matcherlst = [title[start:end]
+                              for _, start, end in matcher(title)]
+                buttonlist.append(self.token_lst_to_str(matcherlst))
+            else:
+                buttonlist.append(self.token_lst_to_str(matcherlst))
+
+            return self.onelist(buttonlist)
+
+        else:
+            print("no buttons or wrong placement of buttons in story")
+
+
+
 

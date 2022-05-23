@@ -18,11 +18,14 @@ let screendetail = {}
 export default function WebFormDetails(props) {
 
   let screenJson = JSON.parse(sessionStorage["Screen Details"])
+  console.log(screenJson)
 
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
-  var contdata = require("./control.json");
-  var scrdata = require("./json.json");
+  var contdata =JSON.parse(JSON.parse(sessionStorage['contolsdata']))
+  console.log(contdata)
+  var scrdata = JSON.parse(JSON.parse(sessionStorage['processdata']))
+  console.log(scrdata)
 
   let btnobj = scrdata["BUTTONS"]["Screen".concat(rendercount)];
 

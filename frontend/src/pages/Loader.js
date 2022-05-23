@@ -5,9 +5,30 @@ import axios from 'axios';
 function Loader() {
     let navigate = useNavigate();
     useEffect(() => {
+    
         getData()
     }, [])
+    useEffect(() => {
+    
+        getControls()
+    }, [])
 
+    const getControls = async () => {
+        let response = await axios.get('/api/getcontrols')
+            .catch(function (error) {
+
+                getControls();
+
+            });
+        if (response != undefined) {
+            sessionStorage.setItem("contolsdata", JSON.stringify(response.data));
+            
+
+        }
+
+
+
+    }
     const getData = async () => {
         let response = await axios.get('/api/get')
             .catch(function (error) {

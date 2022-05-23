@@ -964,3 +964,4 @@ input.dropdown-item.form-control.form-control-sm:focus {
 .message {
   margin-top: 1vh;
 }
+.flex-custom {display: flex;justify-content: space-evenly;}

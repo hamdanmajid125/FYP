@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
+import { faWarning, faEye } from "@fortawesome/free-solid-svg-icons";
 
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
@@ -15,17 +15,124 @@ import PropTypes from "prop-types";
 import axios from "axios";
 let rendercount = 1;
 let screendetail = {}
+var combodic ={}
 
 export default function WebFormDetails(props) {
+ 
+
+  let [first, setfirst] = useState(0)
+
+  var combodic ={}
+  const preview =async  () =>{
+    let screenDetail = {}
+    screenDetail['title'] = document.getElementById("title").value;
+    if (txtlst.length !== 0) {
+      screenDetail['textboxes'] = txtlst;
+    }
+    if (btnlst.length !== 0) {
+      screenDetail['buttons'] = btnlst;
+    }
+    if (checklst.length !== 0) {
+      screenDetail['checkboxes'] = checklst;
+    }
+    if (cmbolst.length !== 0) {
+      if (sessionStorage.getItem("Screen"+rendercount.toString()+"Combo") != undefined) {
+
+        screenDetail['comboboxes'] = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"));
+      }
+    }
+    if(datepcklst.length !== 0)
+    {
+      screenDetail['datepicker'] = datepcklst;
+      
+    }
+    if (rdiolst.length !== 0) {
+      screenDetail['radiobuttons'] = rdiolst;
+    }
+    console.log(screenDetail)
+    console.log(typeof screenDetail)
+    await axios({
+      method: "post",
+      url: "http://127.0.0.1:8000/api/onescreengenrate/",
+      data: { "onescreen": screenDetail }
+    }).then((response) => {
+      console.log(response);
+    });
+
+  }
+
+
 
   let screenJson = JSON.parse(sessionStorage["Screen Details"])
   console.log(screenJson)
+  let [dupcount, setdupcount] = useState(2)
+
+  useEffect(() => {
+    let element = document.getElementById("comboitems1");
+
+    var clone = element.cloneNode(true); // "deep" clone
+    let input = clone.getElementsByTagName("input")[0];
+    let label = clone.getElementsByTagName("label")[0];
+    label.innerHTML = "Option" + dupcount
+    input.setAttribute('id', 'option' + dupcount);
+    clone.id = "comboitem" + dupcount; // there can only be one element with an ID
+    // event handlers are not cloned
+    element.parentNode.appendChild(clone)
+
+
+  }, [dupcount])
+  useEffect(() => {
+   
+    if (first !== 0) {
+      console.log("here")
+      let element = document.getElementsByClassName('comboinput');
+      let title = document.getElementsByClassName('combotitle')[0].value;
+      console.log(title)
+      let lst = []
+      for (let i = 0; i < element.length; i++) {
+        if (element[i].value !== "") {
+
+          lst.push(element[i].value);
+        }
+      }
+      console.log(title)
+      if (title !== "") {
+       
+        console.log(combodic);
+        if(sessionStorage["Screen"+rendercount.toString()+"Combo"]=== undefined){
+          sessionStorage.setItem("Screen"+rendercount.toString()+"Combo",'{}')
+          let combodic = {}
+          combodic[title] = lst;
+  
+          sessionStorage["Screen"+rendercount.toString()+"Combo"]= JSON.stringify(combodic)
+        }
+        else{
+          let combodic = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"))
+         combodic[title] = lst
+         sessionStorage["Screen"+rendercount.toString()+"Combo"]= JSON.stringify(combodic)
+         
+        }
+        
+        console.log(combodic)
+        document.getElementById("modalbox").style.display = "none"
+        comboCount(combocount + 1)
+        setComboLst(combolst)
+        combolst.push(title)
+      }
+      
+    }
+
+  }, [first])
+
+
 
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
   var contdata = JSON.parse(JSON.parse(sessionStorage['contolsdata']))
+  // var contdata = require("./control.json");
   console.log(contdata)
   var scrdata = JSON.parse(JSON.parse(sessionStorage['processdata']))
+  // var scrdata = require("./json.json");
   console.log(scrdata)
 
   let btnobj = scrdata["BUTTONS"]["Screen".concat(rendercount)];
@@ -54,6 +161,10 @@ export default function WebFormDetails(props) {
     contdata["Screen".concat(rendercount).toString()]["Buttons"] !== undefined
       ? contdata["Screen".concat(rendercount).toString()]["Buttons"]
       : [];
+  var datepicker =
+  contdata["Screen".concat(rendercount).toString()]["DatePicker"] !== undefined
+    ? contdata["Screen".concat(rendercount).toString()]["DatePicker"]
+    : [];
 
   Object.keys(btnobj).forEach(function (key) {
     buttonlst.push(btnobj[key]);
@@ -61,14 +172,16 @@ export default function WebFormDetails(props) {
 
   let settitle = screenJson["Screen".concat(rendercount.toString())]
   var scrcontroldata = contdata["Screen".concat(rendercount).toString()];
-  const [txtlst, setTxtLst] = useState([]);
-  const [btnlst, setBtnLst] = useState([]);
-  const [checklst, setChkLst] = useState([]);
-  const [cmbolst, setComboLst] = useState([]);
-  const [rdiolst, setRadioLst] = useState([]);
-  const [data, setData] = useState('');
+  let [txtlst, setTxtLst] = useState([]);
+  let [btnlst, setBtnLst] = useState([]);
+  let [datepcklst, setDatePcklst] = useState([]);
+  let [checklst, setChkLst] = useState([]);
+  let [cmbolst, setComboLst] = useState([]);
+  let [rdiolst, setRadioLst] = useState([]);
+  let [data, setData] = useState('');
 
   let handleButtonText = (lst, e, index) => {
+
     lst[index] = e.target.value
     console.log(lst)
 
@@ -95,11 +208,20 @@ export default function WebFormDetails(props) {
           // radioCount(radiocount+1)
           rdiolst.push(Object.values(scrcontroldata[key])[i]);
         }
+        
+      }
+      else if (key == "DatePicker") {
+        for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+          // radioCount(radiocount+1)
+          datepcklst.push(Object.values(scrcontroldata[key])[i]);
+        }
       }
     });
     if (buttonlst !== undefined) {
       setBtnLst(buttonlst);
     }
+    combodic = {}
+
   }, [rendercount]);
   const back = () => {
     navigate("/newform");
@@ -122,7 +244,15 @@ export default function WebFormDetails(props) {
       screenDetail['checkboxes'] = checklst;
     }
     if (cmbolst.length !== 0) {
-      screenDetail['comboboxes'] = cmbolst;
+      if (sessionStorage.getItem("Screen"+rendercount.toString()+"Combo") != undefined) {
+
+        screenDetail['comboboxes'] = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"));
+      }
+    }
+    if(datepcklst.length !== 0)
+    {
+      screenDetail['datepicker'] = datepcklst;
+      
     }
     if (rdiolst.length !== 0) {
       screenDetail['radiobuttons'] = rdiolst;
@@ -133,19 +263,29 @@ export default function WebFormDetails(props) {
     screendetail["Screen".concat(rendercount.toString())] = screenDetail
     if (rendercount < parseInt(sessionStorage['No Of Screen'])) {
       rendercount = rendercount + 1;
+      
+      setTxtLst([]);
+      setComboLst([])
+      setBtnLst([])
+      setChkLst([])
+      setRadioLst([]);
+      setDatePcklst([]);
       forceUpdate();
     } else {
       sessionStorage.setItem("Screen Details", JSON.stringify(screendetail));
+      sessionStorage.setItem("contolsdata", JSON.stringify(contdata));
+
       newscreen();
       navigate(`/progress`);
     }
   }
-  const newscreen = async () =>{
-   
+
+  const newscreen = async () => {
+
     await axios({
       method: "post",
       url: "http://127.0.0.1:8000/api/wireframe/",
-      data: { "controls": JSON.parse(JSON.parse(sessionStorage['contolsdata'])),"screendetails": JSON.parse(sessionStorage['Screen Details']) },
+      data: { "screendetails": JSON.parse(sessionStorage['Screen Details']) }
     }).then((response) => {
       console.log(response);
     });
@@ -189,13 +329,62 @@ export default function WebFormDetails(props) {
 
 
   }
+
+  const handleSelect = () => {
+    let elem = document.getElementById("modalbox");
+    let lst = elem.getElementsByTagName('input');
+    for (let i = 0; i < lst.length; i++) {
+      lst[i].value = "";
+    }
+    elem.style.display = "block";
+
+
+  }
+
+  console.log(contdata)
   const [txtcount, textCount] = useState(textlst.length);
   const [chkcount, checkCount] = useState(chklst.length);
   const [combocount, comboCount] = useState(combolst.length);
   const [btncount, btnCount] = useState(buttonlst.length);
+  const [datecount, dateCount] = useState(datepcklst.length);
   const [radiocount, radioCount] = useState(radiolst.length);
   return (
     <>
+      <div id="modalbox" className="card modalbox shadow-lg ">
+        <div className="container">
+          <div className="row">
+            <div className="col-md-12 mb-3">
+              <h4 className="text-center">ComboBox Details</h4>
+              <input className="form-control mt-3 mb-3 combotitle" placeholder="Give Title of new Combo Boxes" type="text" />
+            </div>
+            <div id="comboitems1" className="col-md-12"
+              h1>
+              <div className="col-md-8">
+                <div class="input-group input-group-sm mb-3">
+                  <label className="form-label">Option 1</label>
+
+                  <input id="option1" type="text" class="form-control mx-3 comboinput" aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
+                  <button onClick={() => {
+                    setdupcount(dupcount + 1)
+                  }} className="btn btn-primary addoption">+</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+        </div>
+        <div className="buttongroup">
+          <button className="btn btn-outline-primary" onClick={() => {
+            document.getElementById("modalbox").style.display = "none"
+
+          }}>Close</button>
+          <button className="btn btn-primary" onClick={() => {
+            setfirst(first + 1)
+          }}>Save Changes</button>
+        </div>
+      </div>
       <Navbar title="PRO-VISION" profileID={1426363} user="Kevin Smith" />
       <div className="container webformcontainer">
         <h2 className="h2headingplan text-center">
@@ -286,7 +475,7 @@ export default function WebFormDetails(props) {
                                 value={
                                   txtcount == 0
 
-                                    ? (contdata.Screen1.TextBoxes != undefined ? contdata.Screen1.TextBoxes.length : 0)
+                                    ? (contdata.Screen + rendercount.toString().TextBoxes == undefined ? contdata.Screen + rendercount.toString().TextBoxes.length : 0)
                                     : txtlst.length
                                 }
                                 onChange={handletxtChange}
@@ -344,6 +533,7 @@ export default function WebFormDetails(props) {
                             </div>
                             <div className="number text-right controlnumberconter">
                               <button
+                                data-control="combo"
                                 className="minus controlcc"
                                 onClick={() => {
                                   comboCount(cmbolst - 1);
@@ -357,17 +547,14 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   combocount == 0
-                                    ? (contdata.Screen1.ComboBoxes != undefined ? contdata.Screen1.ComboBoxes.length : 0)
+                                    ? (contdata.Screen + rendercount.toString().ComboBoxes == undefined ? contdata.Screen + rendercount.toString().ComboBoxes.length : 0)
                                     : cmbolst.length
                                 }
                                 onChange={handletxtChange}
                               />
                               <button
-                                className="plus controlcc"
-                                onClick={() => {
-                                  comboCount(combocount + 1);
-                                  cmbolst.push("combobox");
-                                }}
+                                class="plus controlcc"
+                                onClick={(e) => handleSelect(e)}
                               >
                                 +
                               </button>
@@ -431,7 +618,7 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   chkcount == 0
-                                    ? (contdata.Screen1.CheckBoxes != undefined ? contdata.Screen1.CheckBoxes.length : 0)
+                                    ? (contdata.Screen + rendercount.toString().CheckBoxes == undefined ? contdata.Screen + rendercount.toString().CheckBoxes.length : 0)
 
                                     : checklst.length
                                 }
@@ -502,7 +689,7 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   radiocount == 0
-                                    ? (contdata.Screen1.RadioButtons != undefined ? contdata.Screen1.RadioButtons.length : 0)
+                                    ? (contdata.Screen + rendercount.toString().RadioButtons == undefined ? contdata.Screen + rendercount.toString().RadioButtons.length : 0)
 
                                     : rdiolst.length
                                 }
@@ -583,7 +770,7 @@ export default function WebFormDetails(props) {
                                 type="text"
                                 value={
                                   btncount == 0
-                                    ? contdata.Screen1.TextBoxes.length
+                                    ? contdata.Screen + rendercount.toString().TextBoxes.length
                                     : btncount
                                 }
                                 onChange={handletxtChange}
@@ -594,6 +781,78 @@ export default function WebFormDetails(props) {
                                   btnCount(btncount + 1);
                                   btnlst.push("button");
                                   // console.log(btnlst);
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="col-md-6">
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                DatePicker
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {datecount == 0
+                                  ? datepicker.map((datepicker, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={datepicker}
+                                      />
+                                    </li>
+                                  ))
+                                  : datepcklst.map((dateindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(datepcklst, e, index)}
+
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={dateindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
+                            <div className="number text-right controlnumberconter">
+                              <button
+                                className="minus controlcc"
+                                onClick={() => {
+                                  checkCount(datecount - 1);
+                                  datepcklst.pop();
+                                }}
+                              >
+                                -
+                              </button>
+                              <input
+                                className="counterinput cnterblue"
+                                type="text"
+                                value={
+                                  datecount == 0
+                                    ? (contdata.Screen + rendercount.toString().DatePicker == undefined ? contdata.Screen + rendercount.toString().DatePicker.length : 0)
+
+                                    : datepcklst.length
+                                }
+                                onChange={handletxtChange}
+                              />
+                              <button
+                                className="plus controlcc"
+                                onClick={() => {
+                                  dateCount(datecount + 1);
+                                  datepcklst.push("datepicker");
                                 }}
                               >
                                 +
@@ -619,7 +878,15 @@ export default function WebFormDetails(props) {
         </div>
         <div className="buttongroups">
           <div className="row">
-            <div className="col-md-6"></div>
+            <div className="col-md-6">
+            <div className="row">
+              <div className="col-md-6">
+
+            <button className="btn btn-dark w-100 hover" onClick={preview}>
+            <FontAwesomeIcon className="eyeicon" icon={faEye} />Preview</button>
+              </div>
+            </div>
+            </div>
             <div className="col-md-6">
               <div className="row">
                 <div className="col-md-6">

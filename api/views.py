@@ -2,12 +2,15 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from rest_framework.response import Response
+from django.conf import settings
+import os
 from rest_framework.decorators import api_view
 import json
 from .models import Project
 from .serializers import ProjectSerializers
-from .corelogic import ProVision, VisionStatement, WireFrame
+from .corelogic import ProVision, VisionStatement, WireFrame, OneScreenWireframe
 from django.http import JsonResponse
+
 data = []
 
 
@@ -44,6 +47,7 @@ def get_screens(request):
     jsondata = json.dumps(data[0])
     print(jsondata)
     return JsonResponse(jsondata, safe=False)
+
 def get_controls(request):
     jsondata = json.dumps(data[1])
     print(jsondata)
@@ -52,9 +56,16 @@ def get_controls(request):
 
 @api_view(['POST', 'GET'])
 def get_wireframe(request):
-
+    projecttitle = data[0]['TITLE']
     screendetails  = request.data['screendetails']
-    controls  = request.data['controls']
-    a = WireFrame(screendetails,controls)
+
+    a = WireFrame(screendetails,projecttitle)
+    print(screendetails)
     boolvalue = a.main()
-    return HttpResponse(boolvalue)
+    return HttpResponse("True")
+
+@api_view(['POST','GET'])
+def onescreengenrate(request):
+    a = OneScreenWireframe(request.data['onescreen'])
+    a.main()
+    return HttpResponse("True")

@@ -975,3 +975,89 @@ input.dropdown-item.form-control.form-control-sm:focus {
   bottom: 84px;
   left: 31%;
 }
+
+span.addcontent {
+  position: absolute;
+  top: -3px;
+  left: 3px;
+  font-weight: 700;
+  font-size: 17px;
+  text-align: center;
+}
+
+
+
+button.btn.btn-primary.addscreen {
+  position: relative;
+  width: 22px;
+  text-align: center;
+  top: 22px;
+  height: 22px;
+  left: 5px;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+}
+select.mt-3.screenselect.form-select.form-control.form-control-sm {
+  font-size: 14px;
+  width: 83%;
+}
+input.top-left {
+  border: 1px solid #ced4da;
+  width: 100%;
+  border-radius: 6px;
+  height: 34px;
+  padding: 20px 10px;
+  right: 0;
+  background: white;
+  z-index: 9999;
+}
+.relative {
+    position: fixed;
+    display: none;
+    /* right: -1px; */
+    right: 0;
+    float: right;
+    z-index: 1;
+
+}
+button.btn.purple {
+  background: #0d6efd;
+  color: white;
+  float: right;
+}
+.card.modalbox {
+  position: absolute;
+  width: 50%;
+  margin: 0 auto;
+  padding: 4rem 3rem;
+  left: 25%;
+  z-index: 1;
+  top: 50%;
+  
+}
+
+.buttongroup button {
+  width: 25% !important;
+  float: right;
+  margin-top: 1rem;
+}
+button.btn.btn-primary.addoption {
+  width: auto;
+  padding: 1px;
+  height: 22px;
+  margin-left: -9px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+.modalbox{
+  display: none;
+}
+button.btn.btn-dark.w-100.hover:hover{
+  background-color: #fff;
+  color: #000;
+  
+}
+.eyeicon{
+  padding-right: 0.5rem;
+}

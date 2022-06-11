@@ -22,9 +22,10 @@ export default function WebForm() {
   let [screenlisttile, screenListTitle] = useState([]);
   let bool = false;
   let screenJson = {}
-  let data =JSON.parse(JSON.parse(sessionStorage['processdata']))
-  // var data = require("./json.json");
+  // let data =JSON.parse(JSON.parse(sessionStorage['processdata']))
+  var data = require("./json.json");
 
+ 
 
   console.log(data)
   let [errorstr, setError] = useState("Screen ")
@@ -32,7 +33,7 @@ export default function WebForm() {
   console.log(screencount);
 
   const saveScreenTitle = () => {
-    
+
     let projectTitle = document.getElementById("projecttitle").value;
     sessionStorage.setItem("Project Title", projectTitle);
     sessionStorage.setItem("Screen Details", JSON.stringify(screenJson));
@@ -42,34 +43,9 @@ export default function WebForm() {
   const setScreensFunc = (valueotext, event) => {
     let a = document.getElementsByClassName("screen");
   };
-  const preCheck = () => {
-    screenJson = {}
-
-    let allTextBoxes = document.getElementsByTagName('input');
-    for (let i = 2; i < allTextBoxes.length; i++) {
-      if (allTextBoxes[i].type == 'text') {
-        let textboxvalue = allTextBoxes[i].value;
-        if (typeof textboxvalue == "string" && textboxvalue.indexOf(',') > -1) {
-          list.push(i - 1)
-        }
-        else {
-          screenJson["Screen".concat(i - 1)] = textboxvalue
-        }
-      }
-    }
-    if (list.length > 0) {
-
-    }
-    return list;
-  }
 
   let submit = () => {
-    let list = preCheck();
-    if (list.length > 0) {
-      let alert = 0;
-      showAlert();
-    }
-    else {
+
       confirmAlert({
         customUI: ({ onClose }) => {
           return (
@@ -106,26 +82,58 @@ export default function WebForm() {
       });
 
 
-    }
+    
 
   };
+  const newTitle = (e) => {
+    console.log(e)
+  }
 
+  const handleSelect = (e) =>{
+    var index = e.target.id.replace('select','');
+    console.log(index)
+    screenJson["Screen"+index.toString()] = e.target.value;
+    console.log(screenJson)
+
+    
+  }
 
   const firstTime = () => {
+    console.log("here")
     for (let i = 0; i < screencount; i++) {
-      screenlisttile.push(data["SCREENS"]["Screen" + (i + 1).toString()][0]);
-
+      screenlisttile.push(data["SCREENS"]["Screen" + (i + 1).toString()]);
+      screenJson["Screen"+(i+1).toString()] = data["SCREENS"]["Screen" + (i + 1).toString()][0]
       screenlst.push(
         <div className="col-md-4">
           <div className="screen"></div>
-          <input
+          <div className="row">
+
+
+            <select id={"select" + (i+1).toString()} onChange={(e)=>handleSelect(e)} class="mt-3 screenselect form-select form-control form-control-sm">
+              {data["SCREENS"]["Screen" + (i + 1).toString()].map((scr, i) => {
+                return <option value={scr}>{scr}</option>
+              })}
+
+
+            </select>
+            <button id={"btn" + (i+1).toString()} className="btn btn-primary addscreen" onClick={(e) => {
+
+              let elem = document.getElementById("relative");
+              let btn = document.getElementById('topleftbtn');
+              btn.dataset.screen = "select" + (i+1).toString();
+              elem.style.display = "block";
+
+
+            }}><span className="addcontent">+</span></button>
+          </div>
+          {/* <input
             id={"textboxes".concat(i)}
-            className="mt-3 form-control form-control-sm"
+            className=""
             type="text"
             placeholder=".form-control-sm"
-            defaultValue={data["SCREENS"]["Screen" + (i + 1).toString()]}
+            defaultValue={console.log(data["SCREENS"]["Screen" + (i + 1).toString()][i])}
             onChange={setScreensFunc(screenlisttile[i])}
-          />
+          /> */}
         </div>
       );
     }
@@ -156,7 +164,7 @@ export default function WebForm() {
           className="mt-3 form-control form-control-sm"
           type="text"
           placeholder=".form-control-sm"
-      
+
         />
       </div>
     )
@@ -202,6 +210,25 @@ export default function WebForm() {
     <>
 
       {bool}
+      <div id="relative" className="relative">
+        <input id="topleftinput" className="top-left" placeholder="Type Your Title" type="form-control  form-control-sm" />
+        <br />
+
+        <button id="topleftbtn" onClick={()=>{
+          let val = document.getElementById("topleftinput").value;
+          let select = document.getElementById('topleftbtn').dataset.screen;
+          console.log(select)
+          var x = document.getElementById(select);
+          var option = document.createElement("option");
+          option.text = val
+          option.value = val
+          x.add(option);
+          document.getElementById("relative").style.display = "none";
+
+
+        }} className="btn purple">Confirm</button>
+
+      </div>
 
       <div id='error' className="alert alert-danger collapse animate__animated animate__fadeInUp" role="alert">
         <div className="container-fluid">

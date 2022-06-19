@@ -5,27 +5,42 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Navbar from "../components/Navbar";
 import Images from "../images/imagejson";
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader";
 
 const UserStoryInput = () => {
-  let navigate = useNavigate()
+  let navigate = useNavigate();
   const [userstory, setUserStory] = useState(null);
-  const history = useNavigate();
+  const [method, setMethod] = useState("userstory");
+  useEffect(() => {
+    sessionStorage.clear()
+   
+  }, [])
+  
+
+  const handleMethod = (event) => {
+    setMethod(event.target.value);
+    
+
+  }
+
   const handleChange = (event) => {
-    setUserStory((userstory) => ({ ...userstory, body: event.target.value }));
+    setUserStory(event.target.value);
+    console.log(userstory)
+
   };
 
   const handleSubmit = async () => {
+    navigate('/spinner');
     await axios({
       method: "post",
       url: "http://127.0.0.1:8000/api/insert/",
-      data: userstory,
+      data: { "userstory": userstory,"method": method },
     }).then((response) => {
-      console.log(response)
-      navigate(`/webform`)
+      console.log(response);
     });
   };
-
   return (
+
     <div>
       <Navbar />
       <div className="container webformcontainer">
@@ -41,6 +56,29 @@ const UserStoryInput = () => {
               </div>
             </div>
             <div className="col-md-7">
+              <div className="radiobuttons">
+                <div className="flex-custom">
+
+                  <div className="item1">
+                    <div className="form-check">
+
+                      <input class="form-check-input" onClick={handleMethod} value="userstory" type="radio" name="method" id="userstory" />
+                      <label class="form-check-label" for="userstory">
+                      User Story
+                      </label>
+                    </div>
+                  </div>
+                  <div className="item2">
+                    <div className="form-check">
+
+                      <input class="form-check-input" onClick={handleMethod} value="vision" type="radio" name="method" id="userstory" />
+                      <label class="form-check-label" for="vision">
+                       Vision Statement
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="textbox shadow-lg p-3 mb-5 bg-white rounded ">
                 <textarea
                   className="userstorytext"

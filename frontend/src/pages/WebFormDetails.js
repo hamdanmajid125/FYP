@@ -1,88 +1,411 @@
-import React, { useState, useEffect } from "react";
-import Images from "./images/imagejson";
-import Dropdown from "react-bootstrap/Dropdown";
-import "./custom.js";
+import React, { useState, useReducer, useEffect } from "react";
+import Images from "../images/imagejson";
+// import "./custom.js";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
-import "./control.json";
-import "./json.json";
-var rendercount = 1;
-export default function WebFormDetails(props) {
-  var contdata = require("./control.json");
-  var scrdata = require("./json.json");
+import Navbar from "../components/Navbar";
 
-  var btnobj = scrdata["BUTTONS"]["Screen".concat(rendercount)];
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+
+import { faWarning, faEye } from "@fortawesome/free-solid-svg-icons";
+
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import PropTypes from "prop-types";
+import axios from "axios";
+let rendercount = 1;
+let screendetail = {}
+var combodic ={}
+
+export default function WebFormDetails(props) {
+ 
+
+  let [first, setfirst] = useState(0)
+
+  var combodic ={}
+  const preview =async  () =>{
+    let screenDetail = {}
+    screenDetail['title'] = document.getElementById("title").value;
+    if (txtlst.length !== 0) {
+      screenDetail['textboxes'] = txtlst;
+    }
+    if (btnlst.length !== 0) {
+      screenDetail['buttons'] = btnlst;
+    }
+    if (checklst.length !== 0) {
+      screenDetail['checkboxes'] = checklst;
+    }
+    if (cmbolst.length !== 0) {
+      if (sessionStorage.getItem("Screen"+rendercount.toString()+"Combo") != undefined) {
+
+        screenDetail['comboboxes'] = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"));
+      }
+    }
+    if(datepcklst.length !== 0)
+    {
+      screenDetail['datepicker'] = datepcklst;
+      
+    }
+    if (rdiolst.length !== 0) {
+      screenDetail['radiobuttons'] = rdiolst;
+    }
+    console.log(screenDetail)
+    console.log(typeof screenDetail)
+    await axios({
+      method: "post",
+      url: "http://127.0.0.1:8000/api/onescreengenrate/",
+      data: { "onescreen": screenDetail }
+    }).then((response) => {
+      console.log(response);
+    });
+
+  }
+
+
+
+  let screenJson = JSON.parse(sessionStorage["Screen Details"])
+  console.log(screenJson)
+  let [dupcount, setdupcount] = useState(2)
+
+  useEffect(() => {
+    let element = document.getElementById("comboitems1");
+
+    var clone = element.cloneNode(true); // "deep" clone
+    let input = clone.getElementsByTagName("input")[0];
+    let label = clone.getElementsByTagName("label")[0];
+    label.innerHTML = "Option" + dupcount
+    input.setAttribute('id', 'option' + dupcount);
+    clone.id = "comboitem" + dupcount; // there can only be one element with an ID
+    // event handlers are not cloned
+    element.parentNode.appendChild(clone)
+
+
+  }, [dupcount])
+  useEffect(() => {
+   
+    if (first !== 0) {
+      console.log("here")
+      let element = document.getElementsByClassName('comboinput');
+      let title = document.getElementsByClassName('combotitle')[0].value;
+      console.log(title)
+      let lst = []
+      for (let i = 0; i < element.length; i++) {
+        if (element[i].value !== "") {
+
+          lst.push(element[i].value);
+        }
+      }
+      console.log(title)
+      if (title !== "") {
+       
+        console.log(combodic);
+        if(sessionStorage["Screen"+rendercount.toString()+"Combo"]=== undefined){
+          sessionStorage.setItem("Screen"+rendercount.toString()+"Combo",'{}')
+          let combodic = {}
+          combodic[title] = lst;
+  
+          sessionStorage["Screen"+rendercount.toString()+"Combo"]= JSON.stringify(combodic)
+        }
+        else{
+          let combodic = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"))
+         combodic[title] = lst
+         sessionStorage["Screen"+rendercount.toString()+"Combo"]= JSON.stringify(combodic)
+         
+        }
+        
+        console.log(combodic)
+        document.getElementById("modalbox").style.display = "none"
+        comboCount(combocount + 1)
+        setComboLst(combolst)
+        combolst.push(title)
+      }
+      
+    }
+
+  }, [first])
+
+
+
+  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  var contdata = JSON.parse(JSON.parse(sessionStorage['contolsdata']))
+  // var contdata = require("./control.json");
+  console.log(contdata)
+  var scrdata = JSON.parse(JSON.parse(sessionStorage['processdata']))
+  // var scrdata = require("./json.json");
+  console.log(scrdata)
+
+  let btnobj = scrdata["BUTTONS"]["Screen".concat(rendercount)];
 
   let navigate = useNavigate();
-  const [txtcount, textCount] = useState(0);
-  const [chkcount, checkCount] = useState(0);
-  const [combocount, comboCount] = useState(0);
-  const [btncount, btnCount] = useState(0);
-  const [radiocount, radioCount] = useState(0);
-
-  var txtlst = [];
+  try{
+    var textlst =
+    contdata["Screen".concat(rendercount).toString()]["TextBoxes"] !== undefined
+      ? contdata["Screen".concat(rendercount).toString()]["TextBoxes"]
+      : [];
+  var chklst =
+    contdata["Screen".concat(rendercount).toString()]["CheckBoxes"] !==
+      undefined
+      ? contdata["Screen".concat(rendercount).toString()]["CheckBoxes"]
+      : [];
+  var combolst =
+    contdata["Screen".concat(rendercount).toString()]["ComboBoxes"] !==
+      undefined
+      ? contdata["Screen".concat(rendercount).toString()]["ComBoxes"]
+      : [];
+  var radiolst =
+    contdata["Screen".concat(rendercount).toString()]["RadioButtons"] !==
+      undefined
+      ? contdata["Screen".concat(rendercount).toString()]["RadioButtons"]
+      : [];
+  var buttonlst =
+    scrdata["BUTTONS"]["Screen".concat(rendercount)] !== undefined
+      ? scrdata["BUTTONS"]["Screen".concat(rendercount)]
+      : [];
+  var datepicker =
+  contdata["Screen".concat(rendercount).toString()]["DatePicker"] !== undefined
+    ? contdata["Screen".concat(rendercount).toString()]["DatePicker"]
+    : [];
+  }
+  catch{
+    var textlst =[];
   var chklst = [];
   var combolst = [];
   var radiolst = [];
-  var btnlst = [];
+  var buttonlst = [];
+  var datepicker = [];
+  }
+  
 
-  Object.keys(btnobj).forEach(function (key) {
-    btnlst.push(btnobj[key]);
-  });
 
-  const [settitle, setTitle] = useState(
-    scrdata["SCREENS"]["Screen".concat(rendercount.toString())]
-  );
+  let settitle = screenJson["Screen".concat(rendercount.toString())]
   var scrcontroldata = contdata["Screen".concat(rendercount).toString()];
-  Object.keys(scrcontroldata).forEach(function (key) {
-    if (key == "TextBoxes") {
-      for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
-        txtlst.push(Object.values(scrcontroldata[key])[i]);
-        console.log(txtlst);
-      }
-    } else if (key == "CheckBoxes") {
-      for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
-        // checkCount(chkcount+1)
-        chklst.push(Object.values(scrcontroldata[key])[i]);
-        console.log(chklst);
-      }
-    } else if (key == "ComboBoxes") {
-      for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
-        // comboCount(combocount+1)
-        combolst.push(Object.values(scrcontroldata[key])[i]);
-        console.log(combolst);
-      }
-    } else if (key == "RadioButton") {
-      for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
-        // radioCount(radiocount+1)
-        radiolst.push(Object.values(scrcontroldata[key])[i]);
-        console.log(radiolst);
-      }
-    }
-  });
-  const handleOnChange = (event) => {
-    setTitle(event.target.value);
-  };
+  let [txtlst, setTxtLst] = useState([]);
+  let [btnlst, setBtnLst] = useState([]);
+  let [datepcklst, setDatePcklst] = useState([]);
+  let [checklst, setChkLst] = useState([]);
+  let [cmbolst, setComboLst] = useState([]);
+  let [rdiolst, setRadioLst] = useState([]);
+  let [data, setData] = useState('');
 
+  let handleButtonText = (lst, e, index) => {
+
+    lst[index] = e.target.value
+    console.log(lst)
+
+  }
+
+
+  useEffect(() => {
+
+    if(contdata["Screen".concat(rendercount).toString()] != undefined)
+    {
+      Object.keys(scrcontroldata).forEach(function (key) {
+        if (key == "TextBoxes") {
+          for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+            txtlst.push(Object.values(scrcontroldata[key])[i]);
+          }
+        } else if (key == "CheckBoxes") {
+          for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+            // checkCount(chkcount+1)
+            checklst.push(Object.values(scrcontroldata[key])[i]);
+          }
+        } else if (key == "ComboBoxes") {
+          for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+            // comboCount(combocount+1)
+            cmbolst.push(Object.values(scrcontroldata[key])[i]);
+          }
+        } else if (key == "RadioButton") {
+          for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+            // radioCount(radiocount+1)
+            rdiolst.push(Object.values(scrcontroldata[key])[i]);
+          }
+          
+        }
+        else if (key == "DatePicker") {
+          for (let i = 0; i < Object.keys(scrcontroldata[key]).length; i++) {
+            // radioCount(radiocount+1)
+            datepcklst.push(Object.values(scrcontroldata[key])[i]);
+          }
+        }
+      });
+    }
+
+   
+   
+    if (buttonlst !== undefined) {
+      setBtnLst(buttonlst);
+    }
+    combodic = {}
+
+  }, [rendercount]);
   const back = () => {
     navigate("/newform");
   };
-  const routerChange = () => {
-    if (rendercount < 3) {
-      rendercount = rendercount + 1;
-      <WebFormDetails />;
-    } else {
-      navigate("/gentrd");
-    }
-  };
+
   const handletxtChange = (event) => {
     textCount(txtcount);
     textCount(event.target.value);
   };
-  console.log(btnlst);
+  function confirmNextScreen() {
+    let screenDetail = {}
+    screenDetail['title'] = document.getElementById("title").value;
+    if (txtlst.length !== 0) {
+      screenDetail['textboxes'] = txtlst;
+    }
+    if (btnlst.length !== 0) {
+      screenDetail['buttons'] = btnlst;
+    }
+    if (checklst.length !== 0) {
+      screenDetail['checkboxes'] = checklst;
+    }
+    if (cmbolst.length !== 0) {
+      if (sessionStorage.getItem("Screen"+rendercount.toString()+"Combo") != undefined) {
+
+        screenDetail['comboboxes'] = JSON.parse(sessionStorage.getItem("Screen"+rendercount.toString()+"Combo"));
+      }
+    }
+    if(datepcklst.length !== 0)
+    {
+      screenDetail['datepicker'] = datepcklst;
+      
+    }
+    if (rdiolst.length !== 0) {
+      screenDetail['radiobuttons'] = rdiolst;
+    }
+    console.log(screenDetail)
+    setTxtLst([])
+    setBtnLst([])
+    screendetail["Screen".concat(rendercount.toString())] = screenDetail
+    if (rendercount < parseInt(sessionStorage['No Of Screen'])) {
+      rendercount = rendercount + 1;
+      
+      setTxtLst([]);
+      setComboLst([])
+      setBtnLst([])
+      setChkLst([])
+      setRadioLst([]);
+      setDatePcklst([]);
+      forceUpdate();
+    } else {
+      sessionStorage.setItem("Screen Details", JSON.stringify(screendetail));
+      sessionStorage.setItem("contolsdata", JSON.stringify(contdata));
+
+      newscreen();
+      navigate(`/progress`);
+    }
+  }
+
+  const newscreen = async () => {
+
+    await axios({
+      method: "post",
+      url: "http://127.0.0.1:8000/api/wireframe/",
+      data: { "screendetails": JSON.parse(sessionStorage['Screen Details']) }
+    }).then((response) => {
+      console.log(response);
+    });
+
+  }
+ 
+  function handleClick() {
+    confirmAlert({
+      customUI: ({ onClose }) => {
+        return (
+          <div className='custom-ui shadow-lg p-3 mb-5 bg-white rounded'>
+            <div className="row">
+              <div className="col-md-2">
+
+
+                <FontAwesomeIcon className="warningicon" icon={faWarning} />
+              </div>
+              <div className="col-md-10 msgcontent">
+
+                <h1>Are you Sure about screen details?</h1>
+                <p className="pmsg">You cant change the title of screens in next steps. <br /> Please make sure your screen titles.</p>
+
+              </div>
+              <div className="buttonsec">
+                <button className="btn btn-primary btn-sm msgbtn" onClick={onClose}>No</button>
+                <button className="btn btn-primary btn-sm msgbtn"
+                  onClick={() => {
+                    confirmNextScreen()
+                    onClose();
+                  }}
+                >
+                  Yes, Continue!
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        );
+      }
+    });
+
+
+  }
+
+  const handleSelect = () => {
+    let elem = document.getElementById("modalbox");
+    let lst = elem.getElementsByTagName('input');
+    for (let i = 0; i < lst.length; i++) {
+      lst[i].value = "";
+    }
+    elem.style.display = "block";
+
+
+  }
+
+ 
+  const [txtcount, textCount] = useState(textlst.length);
+  const [chkcount, checkCount] = useState(chklst.length);
+  const [combocount, comboCount] = useState(combolst.length);
+  const [btncount, btnCount] = useState(buttonlst.length);
+
+  let [datecount, dateCount] = useState(datepcklst.length);
+datecount= datepcklst.length
+
+  const [radiocount, radioCount] = useState(radiolst.length);
 
   return (
     <>
+      <div id="modalbox" className="card modalbox shadow-lg ">
+        <div className="container">
+          <div className="row">
+            <div className="col-md-12 mb-3">
+              <h4 className="text-center">ComboBox Details</h4>
+              <input className="form-control mt-3 mb-3 combotitle" placeholder="Give Title of new Combo Boxes" type="text" />
+            </div>
+            <div id="comboitems1" className="col-md-12"
+              h1>
+              <div className="col-md-8">
+                <div class="input-group input-group-sm mb-3">
+                  <label className="form-label">Option 1</label>
+
+                  <input id="option1" type="text" class="form-control mx-3 comboinput" aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
+                  <button onClick={() => {
+                    setdupcount(dupcount + 1)
+                  }} className="btn btn-primary addoption">+</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+        </div>
+        <div className="buttongroup">
+          <button className="btn btn-outline-primary" onClick={() => {
+            document.getElementById("modalbox").style.display = "none"
+
+          }}>Close</button>
+          <button className="btn btn-primary" onClick={() => {
+            setfirst(first + 1)
+          }}>Save Changes</button>
+        </div>
+      </div>
       <Navbar title="PRO-VISION" profileID={1426363} user="Kevin Smith" />
       <div className="container webformcontainer">
         <h2 className="h2headingplan text-center">
@@ -102,12 +425,14 @@ export default function WebFormDetails(props) {
                   <div className="innerform">
                     {/* form start */}
                     <div className="innerformcomp1 tilescreen">
-                      <h5 className="h5form1 scrtitlehead">Screen Title 1</h5>
+                      <h5 className="h5form1 scrtitlehead">
+                        Screen Title {rendercount}
+                      </h5>
                       <input
                         className="shadow p-3 form-control scrititle"
                         type="text"
+                        id="title"
                         value={settitle}
-                        onChange={handleOnChange}
                         placeholder="Default input"
                       />
                     </div>
@@ -115,117 +440,142 @@ export default function WebFormDetails(props) {
                       <div className="controlsection">
                         <div className="row">
                           <div className="col-md-6">
-                            <Dropdown>
-                              <Dropdown.Toggle
-                                variant="success"
-                                id="dropdown-basic"
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
                                 TextBoxes
-                              </Dropdown.Toggle>
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {txtcount == 0
+                                  ? textlst.map((textlst, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
 
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox1"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
 
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={textlst}
+                                      />
+                                    </li>
+                                  ))
+                                  : txtlst.map((txtindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(txtlst, e, index)}
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={txtindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                             <div className="number text-right controlnumberconter">
                               <button
                                 className="minus controlcc"
-                                onClick={() =>
-                                  txtcount > 0
-                                    ? textCount(txtcount - 1)
-                                    : textCount(0)
-                                }
+                                onClick={() => {
+                                  textCount(txtcount - 1);
+                                  txtlst.pop();
+                                }}
                               >
                                 -
                               </button>
                               <input
                                 className="counterinput cnterblue"
                                 type="text"
-                                value={txtlst.length}
+                                value={
+                                  txtcount == 0
+
+                                    ? (contdata.Screen + rendercount.toString().TextBoxes == undefined ? contdata.Screen + rendercount.toString().TextBoxes.length : 0)
+                                    : txtlst.length
+                                }
                                 onChange={handletxtChange}
                               />
                               <button
                                 className="plus controlcc"
-                                onClick={() => textCount(txtcount + 1)}
+                                onClick={() => {
+                                  textCount(txtcount + 1);
+                                  txtlst.push("textbox");
+                                }}
                               >
                                 +
                               </button>
                             </div>
                           </div>
                           <div className="col-md-6">
-                            <Dropdown>
-                              <Dropdown.Toggle
-                                variant="success"
-                                id="dropdown-basic"
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
                                 ComboBoxes
-                              </Dropdown.Toggle>
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {combocount == 0
+                                  ? combolst.map((combolst, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={combolst}
+                                      />
+                                    </li>
+                                  ))
+                                  : cmbolst.map((comboindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(cmbolst, e, index)}
 
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
-
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={comboindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                             <div className="number text-right controlnumberconter">
                               <button
-                                onClick={() =>
-                                  combocount > 0
-                                    ? comboCount(combocount - 1)
-                                    : comboCount(0)
-                                }
+                                data-control="combo"
                                 className="minus controlcc"
+                                onClick={() => {
+                                  comboCount(cmbolst - 1);
+                                  cmbolst.pop();
+                                }}
                               >
                                 -
                               </button>
                               <input
                                 className="counterinput cnterblue"
                                 type="text"
-                                value={txtcount}
+                                value={
+                                  combocount == 0
+                                    ? (contdata.Screen + rendercount.toString().ComboBoxes == undefined ? contdata.Screen + rendercount.toString().ComboBoxes.length : 0)
+                                    : cmbolst.length
+                                }
+                                onChange={handletxtChange}
                               />
                               <button
-                                className="plus controlcc"
-                                onClick={() => textCount(txtcount + 1)}
+                                class="plus controlcc"
+                                onClick={(e) => handleSelect(e)}
                               >
                                 +
                               </button>
@@ -235,116 +585,143 @@ export default function WebFormDetails(props) {
                         <div className="space"></div>
                         <div className="row">
                           <div className="col-md-6">
-                            <Dropdown>
-                              <Dropdown.Toggle
-                                variant="success"
-                                id="dropdown-basic"
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
                                 CheckBoxes
-                              </Dropdown.Toggle>
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {chkcount == 0
+                                  ? chklst.map((chklst, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={chklst}
+                                      />
+                                    </li>
+                                  ))
+                                  : checklst.map((checkindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(checklst, e, index)}
 
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
-
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={checkindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                             <div className="number text-right controlnumberconter">
                               <button
                                 className="minus controlcc"
-                                onClick={() =>
-                                  chkcount > 0
-                                    ? checkCount(chkcount - 1)
-                                    : checkCount(0)
-                                }
+                                onClick={() => {
+                                  checkCount(chkcount - 1);
+                                  checklst.pop();
+                                }}
                               >
                                 -
                               </button>
                               <input
                                 className="counterinput cnterblue"
                                 type="text"
-                                value={chkcount}
+                                value={
+                                  chkcount == 0
+                                    ? (contdata.Screen + rendercount.toString().CheckBoxes == undefined ? contdata.Screen + rendercount.toString().CheckBoxes.length : 0)
+
+                                    : checklst.length
+                                }
+                                onChange={handletxtChange}
                               />
                               <button
                                 className="plus controlcc"
-                                onClick={() => checkCount(chkcount + 1)}
+                                onClick={() => {
+                                  checkCount(chkcount + 1);
+                                  checklst.push("checkbox");
+                                }}
                               >
                                 +
                               </button>
                             </div>
                           </div>
                           <div className="col-md-6">
-                            <Dropdown>
-                              <Dropdown.Toggle
-                                variant="success"
-                                id="dropdown-basic"
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
                                 RadioButtons
-                              </Dropdown.Toggle>
-
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
-
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {radiocount == 0
+                                  ? radiolst.map((radiolst, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={radiolst}
+                                      />
+                                    </li>
+                                  ))
+                                  : rdiolst.map((radioindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(rdiolst, e, index)}
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={radioindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                             <div className="number text-right controlnumberconter">
                               <button
                                 className="minus controlcc"
-                                onClick={() =>
-                                  radiocount > 0
-                                    ? radioCount(radiocount - 1)
-                                    : radioCount(0)
-                                }
+                                onClick={() => {
+                                  radioCount(radiocount - 1);
+                                  rdiolst.pop();
+                                }}
                               >
                                 -
                               </button>
                               <input
                                 className="counterinput cnterblue"
                                 type="text"
-                                value={radiocount}
+                                value={
+                                  radiocount == 0
+                                    ? (contdata.Screen + rendercount.toString().RadioButtons == undefined ? contdata.Screen + rendercount.toString().RadioButtons.length : 0)
+
+                                    : rdiolst.length
+                                }
+                                onChange={handletxtChange}
                               />
                               <button
                                 className="plus controlcc"
-                                onClick={() => radioCount(radiocount + 1)}
+                                onClick={() => {
+                                  radioCount(radiocount + 1);
+                                  rdiolst.push("radiobox");
+                                }}
                               >
                                 +
                               </button>
@@ -354,58 +731,156 @@ export default function WebFormDetails(props) {
                         <div className="space"></div>
                         <div className="row">
                           <div className="col-md-6">
-                            <Dropdown>
-                              <Dropdown.Toggle
-                                variant="success"
-                                id="dropdown-basic"
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                               >
                                 Buttons
-                              </Dropdown.Toggle>
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {btncount == 0
 
-                              <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">
-                                  <input
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="txtbox2"
-                                  />
-                                </Dropdown.Item>
-                              </Dropdown.Menu>
-                            </Dropdown>
+                                  ? buttonlst.map((btnlst, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        id={index}
 
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={btnlst}
+                                      />
+                                    </li>
+                                  ))
+                                  : btnlst.map((btnindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        // onKeyPress={handleInputChange}
+                                        id={"btnlst".concat(index.toString())}
+                                        onChange={e => handleButtonText(btnlst, e, index)}
+
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={btnindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
                             <div className="number text-right controlnumberconter">
                               <button
                                 className="minus controlcc"
-                                onClick={() =>
-                                  btncount > 0
-                                    ? btnCount(btncount - 1)
-                                    : btnCount(0)
-                                }
+                                onClick={() => {
+                                  btnCount(btncount - 1);
+                                  btnlst.pop();
+                                  // console.log(btnlst);
+                                }}
                               >
                                 -
                               </button>
                               <input
                                 className="counterinput cnterblue"
                                 type="text"
-                                value={btnlst.length}
+                                value={
+                                  btncount == 0
+                                    ? (scrdata["BUTTONS"]["Screen"+rendercount.toString()]== undefined ? scrdata["BUTTONS"]["Screen"+rendercount.toString()] : 0)
+
+                                    : btnlst.length
+                                 
+                                }
+                                onChange={handletxtChange}
                               />
                               <button
                                 className="plus controlcc"
-                                onClick={() => btnCount(btncount + 1)}
+                                onClick={() => {
+                                  btnCount(btncount + 1);
+                                  btnlst.push("button");
+                                  // console.log(btnlst);
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="col-md-6">
+                            <div className="dropdown">
+                              <button
+                                className="btn btn-secondary dropdown-toggle"
+                                type="button"
+                                id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                DatePicker
+                              </button>
+                              <ul
+                                className="dropdown-menu"
+                                aria-labelledby="dropdownMenuButton1"
+                              >
+                                {datecount == 0
+                                  ? datepicker.map((datepicker, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={datepicker}
+                                      />
+                                    </li>
+                                  ))
+                                  : datepcklst.map((dateindex, index) => (
+                                    <li>
+                                      <input
+                                        className="dropdown-item form-control form-control-sm"
+                                        type="text"
+                                        onChange={e => handleButtonText(datepcklst, e, index)}
+
+                                        aria-label=".form-control-sm example"
+                                        defaultValue={dateindex}
+                                      />
+                                    </li>
+                                  ))}
+                              </ul>
+                            </div>
+                            <div className="number text-right controlnumberconter">
+                              <button
+                                className="minus controlcc"
+                                onClick={() => {
+                                  checkCount(datecount - 1);
+                                  datepcklst.pop();
+                                }}
+                              >
+                                -
+                              </button>
+                              <input
+                                className="counterinput cnterblue"
+                                type="text"
+                                value={
+                                  // radiocount == 0
+                                  // ? (contdata.Screen + rendercount.toString().RadioButtons == undefined ? contdata.Screen + rendercount.toString().RadioButtons.length : 0)
+
+                                  // : rdiolst.length
+                                  datecount == 0
+                                    ? (contdata.Screen + rendercount.toString().DatePicker == undefined ? contdata.Screen + rendercount.toString().DatePicker.length : 0)
+
+                                    : datepcklst.length
+                                }
+                                onChange={handletxtChange}
+                              />
+                              <button
+                                className="plus controlcc"
+                                onClick={() => {
+                                  dateCount(datecount + 1);
+                                  datepcklst.push("datepicker");
+                                }}
                               >
                                 +
                               </button>
@@ -430,14 +905,22 @@ export default function WebFormDetails(props) {
         </div>
         <div className="buttongroups">
           <div className="row">
-            <div className="col-md-6"></div>
+            <div className="col-md-6">
+            <div className="row">
+              <div className="col-md-6">
+
+            <button className="btn btn-dark w-100 hover" onClick={preview}>
+            <FontAwesomeIcon className="eyeicon" icon={faEye} />Preview</button>
+              </div>
+            </div>
+            </div>
             <div className="col-md-6">
               <div className="row">
                 <div className="col-md-6">
                   <button
                     type="button"
                     onClick={back}
-                    class="btn btn-outline-primary"
+                    className="btn btn-outline-primary"
                   >
                     Back
                   </button>
@@ -445,9 +928,9 @@ export default function WebFormDetails(props) {
 
                 <div className="col-md-6">
                   <button
-                    onClick={routerChange}
                     type="button"
-                    class="btn btn-primary"
+                    onClick={handleClick}
+                    className="btn btn-primary"
                   >
                     Proceed
                   </button>
@@ -461,6 +944,9 @@ export default function WebFormDetails(props) {
     </>
   );
 }
+WebFormDetails.propTypes = {
+  count: PropTypes.number,
+};
 WebFormDetails.defaultProps = {
-  count: rendercount + 1,
+  count: 0,
 };

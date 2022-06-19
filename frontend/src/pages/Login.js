@@ -7,7 +7,6 @@ export default function Login() {
   const routerChange = () => {
     navigate('/home');
   }
-  console.log(Images)
   return (
     <>
       <div className="parentlogin">

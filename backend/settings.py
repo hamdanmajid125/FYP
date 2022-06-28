@@ -55,11 +55,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 ROOT_URLCONF = 'backend.urls'
-
+FILES_DIR = os.path.abspath(os.path.join(BASE_DIR, 'wireframe'))
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,"frontend","build")],
+        'DIRS': [os.path.join(BASE_DIR,"frontend","build"),os.path.join(BASE_DIR,"template")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
